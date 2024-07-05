@@ -1,3 +1,4 @@
+using Wolny.P.Application;
 using Wolny.P.Infrastructure;
 
 namespace Wolny.P.Api;
@@ -17,6 +18,7 @@ public class Program
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.InfrastructureConfigureServices(builder.Configuration);
+        builder.Services.ApplicationConfigureServices(builder.Configuration);
 
         var app = builder.Build();
 

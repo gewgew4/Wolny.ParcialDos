@@ -9,6 +9,6 @@ public class Pedido : BaseEntity<Pedido>
     
     
     // Navigation property
-    public int RecorridoId { get; set; }
+    public int? RecorridoId { get; set; }
     public virtual Recorrido? Recorrido { get; set; }
 }
