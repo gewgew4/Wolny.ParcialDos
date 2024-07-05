@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Wolny.P.Domain;
 
 namespace Wolny.P.Infrastructure;
@@ -43,6 +44,11 @@ public class PContext : DbContext
             .HasOne(x => x.Recorrido)
             .WithMany(x => x.PlanRecorridos)
             .HasForeignKey(x => x.RecorridoId);
+
+        modelBuilder.Entity<PlanRecorrido>()
+            .HasOne(x => x.Ciudad)
+            .WithMany(x => x.PlanRecorridos)
+            .HasForeignKey(x => x.CiudadId);
 
         modelBuilder.Entity<Recorrido>()
             .HasMany(x => x.Pedidos)
@@ -141,37 +147,46 @@ public class PContext : DbContext
             modelBuilder.Entity<Ciudad>().HasData(ciudad);
         }
 
-        var geo1 = new Geolocalizacion(40.712776, -74.005974);
-        var geo2 = new Geolocalizacion(34.052235, -118.243683);
-        var geo3 = new Geolocalizacion(51.507351, -0.127758);
+        var geoCaba = new Geolocalizacion(-34.60, -58.37);
 
         // Seed Camiones
-        var camion1 = new Camion
+        var camionUsado = new Camion
         {
             Id = 1,
-            EnViaje = false,
-            Patente = "ABC123",
-            Ubicacion = geo1
+            Disponible = true,
+            Patente = "XYZ0",
+            Ubicacion = geoCaba
         };
+        modelBuilder.Entity<Camion>().HasData(camionUsado);
 
-        modelBuilder.Entity<Camion>().HasData(camion1);
-
-        // Seed Recorridos
-        var recorrido1 = new Recorrido
+        for (int i = 2; i < 5; i++)
         {
-            Id = 1,
-            Camion = camion1,
-            FechaInicio = DateTime.UtcNow,
-            FechaFin = null
-        };
+            var camion = new Camion
+            {
+                Id = i,
+                Disponible = true,
+                Patente = $"ABC{i}",
+                Ubicacion = geoCaba
+            };
+            modelBuilder.Entity<Camion>().HasData(camion);
+        }
 
-        modelBuilder.Entity<Recorrido>().HasData(new
-        {
-            recorrido1.Id,
-            CamionId = camion1.Id,
-            recorrido1.FechaInicio,
-            recorrido1.FechaFin
-        });
+        //// Seed Recorridos
+        //var recorrido1 = new Recorrido
+        //{
+        //    Id = 1,
+        //    Camion = camionUsado,
+        //    FechaInicio = DateTime.UtcNow,
+        //    FechaFin = null
+        //};
+
+        //modelBuilder.Entity<Recorrido>().HasData(new
+        //{
+        //    recorrido1.Id,
+        //    CamionId = camionUsado.Id,
+        //    recorrido1.FechaInicio,
+        //    recorrido1.FechaFin
+        //});
 
         // Seed Pedidos
         var idPedido = 0;
@@ -182,33 +197,35 @@ public class PContext : DbContext
                 var pedido = new Pedido
                 {
                     Id = ++idPedido,
-                    Ciudad = ciudades[i]
+                    Ciudad = ciudades[i],
+                    Entregado = false
                 };
 
                 modelBuilder.Entity<Pedido>().HasData(new
                 {
                     pedido.Id,
-                    CiudadId = pedido.Ciudad.Id
+                    CiudadId = pedido.Ciudad.Id,
+                    pedido.Entregado
                 });
             }
         }
 
-        // Seed PlanRecorridos
-        var planRecorrido1 = new PlanRecorrido
-        {
-            Id = 1,
-            Ciudad = ciudades[0],
-            Prioridad = 1,
-            RecorridoId = recorrido1.Id,
-            Recorrido = recorrido1
-        };
+        //// Seed PlanRecorridos
+        //var planRecorrido1 = new PlanRecorrido
+        //{
+        //    Id = 1,
+        //    Ciudad = ciudades[0],
+        //    Prioridad = 1,
+        //    RecorridoId = recorrido1.Id,
+        //    Recorrido = recorrido1
+        //};
 
-        modelBuilder.Entity<PlanRecorrido>().HasData(new
-        {
-            planRecorrido1.Id,
-            CiudadId = planRecorrido1.Ciudad.Id,
-            planRecorrido1.Prioridad,
-            RecorridoId = planRecorrido1.Recorrido.Id
-        });
+        //modelBuilder.Entity<PlanRecorrido>().HasData(new
+        //{
+        //    planRecorrido1.Id,
+        //    CiudadId = planRecorrido1.Ciudad.Id,
+        //    planRecorrido1.Prioridad,
+        //    RecorridoId = planRecorrido1.Recorrido.Id
+        //});
     }
 }

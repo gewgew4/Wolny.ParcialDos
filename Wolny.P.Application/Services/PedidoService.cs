@@ -47,8 +47,8 @@ public class PedidoService(IUnitOfWork unitOfWork) : IPedidoService
         }
 
         existing.Ciudad = entity.Ciudad;
-        existing.Recorrido = entity.Recorrido;
-        existing.RecorridoId = entity.Recorrido.Id;
+        //existing.Recorrido = entity.Recorrido;
+        //existing.RecorridoId = entity.Recorrido.Id;
         
         await unitOfWork.SaveAsync();
 

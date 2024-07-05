@@ -46,7 +46,7 @@ public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoServic
             return Result<PlanRecorrido>.Fail(ResultType.NotFound);
         }
 
-        existing.Ciudad = entity.Ciudad;
+        //existing.Ciudad = entity.Ciudad;
         existing.FechaFin = entity.FechaFin;
         existing.Prioridad = entity.Prioridad;
         existing.Recorrido = entity.Recorrido;

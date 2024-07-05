@@ -6,4 +6,6 @@ public class Ciudad : BaseEntity<Ciudad>
     public string Nombre { get; set; } = string.Empty;
     public Geolocalizacion Ubicacion { get; set; }
 
+    // Navigation props
+    public virtual ICollection<PlanRecorrido> PlanRecorridos { get; set; }
 }

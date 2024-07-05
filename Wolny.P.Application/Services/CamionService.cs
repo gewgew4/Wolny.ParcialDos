@@ -46,7 +46,7 @@ public class CamionService(IUnitOfWork unitOfWork) : ICamionService
             return Result<Camion>.Fail(ResultType.NotFound);
         }
 
-        existing.EnViaje = entity.EnViaje;
+        existing.Disponible = entity.Disponible;
         existing.Patente = entity.Patente;
         existing.Ubicacion = entity.Ubicacion;
 

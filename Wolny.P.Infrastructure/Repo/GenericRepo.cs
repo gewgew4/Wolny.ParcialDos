@@ -78,9 +78,12 @@ public class GenericRepo<T> : IGenericRepo<T> where T : BaseEntity<T>
         _dbSet.Remove(entity);
     }
 
-    public Task<List<T>> GetAll(params string[] includeProperties)
+    public Task<List<T>> GetAll(bool tracking = true, params string[] includeProperties)
     {
         IQueryable<T> query = _context.Set<T>();
+
+        if (!tracking)
+            query = query.AsNoTracking();
 
         foreach (var includeProperty in includeProperties)
         {
