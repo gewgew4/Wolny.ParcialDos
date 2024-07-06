@@ -4,7 +4,7 @@ public class Recorrido : BaseEntity<Recorrido>
 {
     public Camion? Camion { get; set; }
     public DateTime? FechaFin { get; set; }
-    public DateTime FechaInicio { get; set; }
+    public DateTime? FechaInicio { get; set; }
     public bool Finalizado { get; set; }
 
     // Navigation props
