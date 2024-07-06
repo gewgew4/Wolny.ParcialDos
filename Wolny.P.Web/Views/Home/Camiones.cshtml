@@ -1,0 +1,51 @@
+﻿@model IEnumerable<Wolny.P.Web.Models.CamionModel>
+
+@{
+    ViewData["Title"] = "Camiones";
+}
+
+<h1>Camiones</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+@Html.ActionLink("Punto 3", "PuntoTres") |
+@Html.ActionLink("Punto 4", "PuntoCuatro") |
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Disponible)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Patente)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Disponible)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Patente)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Punto 2", "PuntoDos", new { patente = item.Patente }) |
+                    @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

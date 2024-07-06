@@ -1,0 +1,81 @@
+﻿@model IEnumerable<Wolny.P.Web.Models.CamionModel>
+
+@{
+    ViewData["Title"] = "PuntoCuatro";
+}
+
+<h1>PuntoCuatro</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Disponible)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Patente)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Disponible)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Patente)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+
+<div id="map" style="height: 400px;"></div>
+<script>
+    var camiones = @Html.Raw(Json.Serialize(Model)); // Serialize C# Model to JavaScript object
+    const svgPath = "M 0 0 L 22 0 L 22 22 L 0 22 Z";
+
+    function initMap() {
+        // Create a map centered on the first truck's location
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: camiones[0].ubicacion.latitud, lng: camiones[0].ubicacion.longitud },
+            zoom: 6
+        });
+
+        // Loop through each truck and create a marker for it
+        camiones.forEach(function (camion) {
+            var marker = new google.maps.Marker({
+                position: { lat: camion.ubicacion.latitud, lng: camion.ubicacion.longitud },
+                map: map,
+                label: { text: camion.patente, fontWeight: 'bold' }, // Custom label with Patente
+                icon: {
+                    path: svgPath /* google.maps.SymbolPath.CIRCLE */,
+                    fillColor: 'red',
+                    fillOpacity: 0.2,
+                    strokeWeight: 1,
+                    scale: 1 // Adjust the size of the marker icon
+                }
+            });
+        });
+    }
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJ0zX_jCFehbDKqZCv7rNCaG4FnSp6MpU&callback=initMap">
+</script>

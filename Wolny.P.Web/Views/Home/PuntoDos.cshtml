@@ -1,10 +1,10 @@
 ﻿@model IEnumerable<Wolny.P.Web.Models.RecorridoModel>
 
 @{
-    ViewData["Title"] = "Recorridos";
+    ViewData["Title"] = "PuntoDos";
 }
 
-<h1>Recorridos</h1>
+<h1>PuntoDos</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -43,9 +43,9 @@
                 @Html.DisplayFor(modelItem => item.Id)
             </td>
             <td>
-                @* @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) | *@
-                @Html.ActionLink("Punto 5", "Details", new { id = item.Id }) |
-                @* @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ }) *@
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
             </td>
         </tr>
 }

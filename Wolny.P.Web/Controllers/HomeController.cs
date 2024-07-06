@@ -15,44 +15,66 @@ namespace Wolny.P.Web.Controllers
 
         public async Task<ActionResult<RecorridoModel>> Details(int id)
         {
-            var options = new JsonSerializerOptions();
-            options.PropertyNameCaseInsensitive = true;
+            var url = $"https://localhost:7168/api/Recorrido/{id}";
 
-            var result = new RecorridoModel();
-            var httpRequestMessage = new HttpRequestMessage(
-                HttpMethod.Get,
-                $"https://localhost:7168/api/Recorrido/{id}")
-            //{
-            //    Content = JsonContent.Create(new { to = currency, from = "ARS", amount = order.TotalCost })
-            //}
-            ;
-
-            var httpClient = httpClientFactory.CreateClient();
-            var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-
-            if (httpResponseMessage.IsSuccessStatusCode)
-            {
-                using var contentStream =
-                    await httpResponseMessage.Content.ReadAsStreamAsync();
-
-                var content = await httpResponseMessage.Content.ReadAsStringAsync();
-
-                var deserialized = await JsonSerializer.DeserializeAsync<Result<RecorridoModel>>(contentStream, options);
-                result = deserialized.Data;
-            }
+            var result = await LlamadaHttp<RecorridoModel>(httpClientFactory, url);
 
             return View(result);
         }
 
         public async Task<ActionResult<List<RecorridoModel>>> Recorridos()
         {
+            var url = "https://localhost:7168/api/Recorrido";
+
+            var result = await LlamadaHttp<List<RecorridoModel>>(httpClientFactory, url);
+
+            return View(result);
+        }
+
+        public async Task<ActionResult<List<CamionModel>>> Camiones()
+        {
+            var url = "https://localhost:7168/api/Camion";
+
+            var result = await LlamadaHttp<List<CamionModel>>(httpClientFactory, url);
+
+            return View(result);
+        }
+
+        public async Task<ActionResult<List<RecorridoModel>>> PuntoDos(string patente)
+        {
+            var url = $"https://localhost:7168/api/Recorrido/puntoDos?Top=10&Descending=true&Patente={patente}&Finalizado=true";
+
+            var result = await LlamadaHttp<List<RecorridoModel>>(httpClientFactory, url);
+
+            return View(result);
+        }
+
+        public async Task<ActionResult<List<CamionModel>>> PuntoTres()
+        {
+            var url = "https://localhost:7168/api/Camion/PuntoTres?disponible=true";
+
+            var result = await LlamadaHttp<List<CamionModel>>(httpClientFactory, url);
+
+            return View(result);
+        }
+
+        public async Task<ActionResult<List<CamionModel>>> PuntoCuatro()
+        {
+            var url = "https://localhost:7168/api/Camion/PuntoTres?disponible=false";
+
+            var result = await LlamadaHttp<List<CamionModel>>(httpClientFactory, url);
+
+            return View(result);
+        }
+
+        private static async Task<T> LlamadaHttp<T>(IHttpClientFactory httpClientFactory, string url) where T : class
+        {
             var options = new JsonSerializerOptions();
             options.PropertyNameCaseInsensitive = true;
 
-            var result = new List<RecorridoModel>();
             var httpRequestMessage = new HttpRequestMessage(
                 HttpMethod.Get,
-                "https://localhost:7168/api/Recorrido")
+                url)
             //{
             //    Content = JsonContent.Create(new { to = currency, from = "ARS", amount = order.TotalCost })
             //}
@@ -68,11 +90,11 @@ namespace Wolny.P.Web.Controllers
 
                 var content = await httpResponseMessage.Content.ReadAsStringAsync();
 
-                var deserialized = await JsonSerializer.DeserializeAsync<Result<List<RecorridoModel>>>(contentStream, options);
-                result = deserialized.Data;
+                var deserialized = await JsonSerializer.DeserializeAsync<Result<T>>(contentStream, options);
+                return deserialized.Data;
             }
 
-            return View(result);
+            return default(T);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
