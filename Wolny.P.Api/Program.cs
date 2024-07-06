@@ -25,6 +25,11 @@ public class Program
         builder.Services.InfrastructureConfigureServices(builder.Configuration);
         builder.Services.ApplicationConfigureServices(builder.Configuration);
 
+        builder.WebHost.ConfigureKestrel(serverOptions =>
+        {
+            serverOptions.Limits.MaxResponseBufferSize = null;
+        });
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

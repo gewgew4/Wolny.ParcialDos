@@ -1,0 +1,69 @@
+﻿@model Wolny.P.Web.Models.PuntoUnoModel
+
+@{
+    ViewData["Title"] = "PedidosSinRecorrido";
+}
+
+<h1>PedidosSinRecorrido</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<form asp-action="SubmitSelectedPedidos" method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    PedidoId
+                </th>
+                <th>
+                    Entregado
+                </th>
+                <th>
+                    Ciudad
+                </th>
+                <th>
+                    Select
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Pedidos)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Entregado)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Ciudad.Nombre)
+                    </td>
+                    <td>
+                        <input type="checkbox" name="selectedPedidos" value="@item.Id" />
+                    </td>
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div>
+        <label for="selectedCiudad">Select a Ciudad:</label>
+        <select id="selectedCiudad" name="selectedCiudad">
+            @foreach (var ciudad in Model.Ciudades)
+            {
+                <option value="@ciudad.Id">@ciudad.Nombre</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit">Submit Selected</button>
+</form>

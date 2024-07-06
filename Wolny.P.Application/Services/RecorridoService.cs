@@ -75,10 +75,14 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         {
             var ciudadesPorRecorrer = new List<Ciudad>();
             var pedidosPorRecorrer = new List<Pedido>();
+            Camion? existingCamion= null;
             var listaCiudadesExistentes = await unitOfWork.CiudadRepo.GetAll();
 
             // Validaciones
-            var existingCamion = await unitOfWork.CamionRepo.GetById(entity.CamionId) ?? throw new NotFoundException("Camión inexistente");
+            if (entity.CamionId.HasValue)
+            {
+                existingCamion = await unitOfWork.CamionRepo.GetById(entity.CamionId.Value) ?? throw new NotFoundException("Camión inexistente");
+            }
 
             foreach (var pedidoId in entity.PedidoIds)
             {
@@ -161,7 +165,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         }
     }
 
-    private static Recorrido CrearRecorrido(List<Ciudad> ciudadesPorRecorrer, List<Pedido> pedidosPorRecorrer, Camion existingCamion, int[] mejorRuta)
+    private static Recorrido CrearRecorrido(List<Ciudad> ciudadesPorRecorrer, List<Pedido> pedidosPorRecorrer, Camion? existingCamion, int[] mejorRuta)
     {
         var planRecorridos = new List<PlanRecorrido>();
         for (int i = 0; i < mejorRuta.Length; i++)
