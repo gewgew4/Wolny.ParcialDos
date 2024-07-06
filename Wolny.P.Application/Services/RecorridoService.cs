@@ -29,7 +29,17 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         return Result<List<Recorrido>>.Ok(listEntity);
     }
 
-    public async Task<Result<List<Recorrido>>> GetWheresync(Expression<Func<Recorrido, bool>> predicate,
+    public async Task<Result<List<Recorrido>>> GetPuntoDos(PuntoDos request)
+    {
+        var listEntity = await unitOfWork.RecorridoRepo.GetWhere(
+            x => x.Camion.Patente == request.Patente && x.Finalizado == request.Finalizado,
+            request.Ascending ? o => o.OrderBy(y => y.FechaInicio) : o => o.OrderByDescending(y => y.FechaInicio),
+            request.Top);
+
+        return Result<List<Recorrido>>.Ok(listEntity.ToList());
+    }
+
+    public async Task<Result<List<Recorrido>>> GetWhereAsync(Expression<Func<Recorrido, bool>> predicate,
                                                     Func<IQueryable<Recorrido>,
                                                     IOrderedQueryable<Recorrido>> orderBy = null,
                                                     int? top = null,

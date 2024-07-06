@@ -26,7 +26,7 @@ public class PedidoService(IUnitOfWork unitOfWork) : IPedidoService
         return Result<List<Pedido>>.Ok(listEntity);
     }
 
-    public async Task<Result<List<Pedido>>> GetWheresync(Expression<Func<Pedido, bool>> predicate,
+    public async Task<Result<List<Pedido>>> GetWhereAsync(Expression<Func<Pedido, bool>> predicate,
                                                     Func<IQueryable<Pedido>,
                                                     IOrderedQueryable<Pedido>> orderBy = null,
                                                     int? top = null,

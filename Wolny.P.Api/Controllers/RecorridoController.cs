@@ -23,6 +23,20 @@ public class RecorridoController(IRecorridoService service) : ControllerBase
         return WebApiResponse.GetErrorResponse(result);
     }
 
+    [HttpGet("puntoDos")]
+    public async Task<ActionResult<List<Recorrido>>> GetPuntoDos([FromQuery] PuntoDos request)
+    {
+        var result = await service.GetPuntoDos(request);
+
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return WebApiResponse.GetErrorResponse(result);
+    }
+
+
     [HttpPut]
     public async Task<ActionResult<Recorrido>> Put(Recorrido entity)
     {

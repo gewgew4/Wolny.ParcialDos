@@ -7,7 +7,7 @@ namespace Wolny.P.Application.Services.Interfaces;
 public interface IGenericService<T> where T : BaseEntity<T>
 {
     Task<Result<List<T>>> GetAllAsync();
-    Task<Result<List<T>>> GetWheresync(Expression<Func<T, bool>> predicate,
+    Task<Result<List<T>>> GetWhereAsync(Expression<Func<T, bool>> predicate,
                                   Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
                                   int? top = null,
                                   int? skip = null,

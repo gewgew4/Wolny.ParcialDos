@@ -22,6 +22,33 @@ public class CamionController(ICamionService service) : ControllerBase
         return WebApiResponse.GetErrorResponse(result);
     }
 
+    [HttpGet("PuntoTres")]
+    public async Task<ActionResult<List<Camion>>> GetPuntoTres([FromQuery] bool disponible)
+    {
+        var result = await service.GetPuntoTres(disponible);
+
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return WebApiResponse.GetErrorResponse(result);
+    }
+
+    [HttpGet("PuntoCuatro")]
+    public async Task<ActionResult<List<Camion>>> GetPuntoCuatro()
+    {
+        // Uso la prop Disponible de Camion para saber si está en viaje o no
+        var result = await service.GetPuntoTres(false);
+
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return WebApiResponse.GetErrorResponse(result);
+    }
+
     [HttpPut]
     public async Task<ActionResult<Camion>> Put(Camion entity)
     {

@@ -26,7 +26,7 @@ public class CiudadService(IUnitOfWork unitOfWork) : ICiudadService
         return Result<List<Ciudad>>.Ok(listEntity);
     }
 
-    public async Task<Result<List<Ciudad>>> GetWheresync(Expression<Func<Ciudad, bool>> predicate,
+    public async Task<Result<List<Ciudad>>> GetWhereAsync(Expression<Func<Ciudad, bool>> predicate,
                                                     Func<IQueryable<Ciudad>,
                                                     IOrderedQueryable<Ciudad>> orderBy = null,
                                                     int? top = null,

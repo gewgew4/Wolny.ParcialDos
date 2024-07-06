@@ -26,7 +26,14 @@ public class CamionService(IUnitOfWork unitOfWork) : ICamionService
         return Result<List<Camion>>.Ok(listEntity);
     }
 
-    public async Task<Result<List<Camion>>> GetWheresync(Expression<Func<Camion, bool>> predicate,
+    public async Task<Result<List<Camion>>> GetPuntoTres(bool disponible)
+    {
+        var listEntity = await unitOfWork.CamionRepo.GetWhere(x=> x.Disponible == disponible);
+
+        return Result<List<Camion>>.Ok(listEntity.ToList());
+    }
+
+    public async Task<Result<List<Camion>>> GetWhereAsync(Expression<Func<Camion, bool>> predicate,
                                                     Func<IQueryable<Camion>,
                                                     IOrderedQueryable<Camion>> orderBy = null,
                                                     int? top = null,

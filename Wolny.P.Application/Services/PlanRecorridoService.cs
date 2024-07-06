@@ -26,7 +26,7 @@ public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoServic
         return Result<List<PlanRecorrido>>.Ok(listEntity);
     }
 
-    public async Task<Result<List<PlanRecorrido>>> GetWheresync(Expression<Func<PlanRecorrido, bool>> predicate,
+    public async Task<Result<List<PlanRecorrido>>> GetWhereAsync(Expression<Func<PlanRecorrido, bool>> predicate,
                                                     Func<IQueryable<PlanRecorrido>,
                                                     IOrderedQueryable<PlanRecorrido>> orderBy = null,
                                                     int? top = null,
