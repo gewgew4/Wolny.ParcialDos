@@ -53,6 +53,9 @@
     }
             ];
 
+        // Add the first coordinate again to close the circle
+        coordinates.push({ lat: @Model.PlanRecorridos.First().Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false)), lng: @Model.PlanRecorridos.First().Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)) });
+
         // Create a map centered at the first coordinate
         var map = new google.maps.Map(document.getElementById('map'), {
             center: coordinates[0],
