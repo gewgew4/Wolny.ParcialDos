@@ -1,0 +1,67 @@
+﻿@using System.Globalization
+@model Wolny.P.Web.Models.RecorridoModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Recorrido</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.FechaFin)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FechaFin)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.FechaInicio)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FechaInicio)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Finalizado)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Finalizado)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Id)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Id)
+        </dd>
+    </dl>
+</div>
+<div>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    <a asp-action="Index">Back to List</a>
+</div>
+
+<div id="map" style="height: 400px;"></div>
+<script>
+    function initMap() {
+        // Specify your coordinates
+        var coordinates = { lat: @Model.PlanRecorridos.First().Ciudad.Ubicacion.Latitud.ToString("0,0.00", new CultureInfo("en-US", false)), lng: @Model.PlanRecorridos.First().Ciudad.Ubicacion.Longitud.ToString("0,0.00", new CultureInfo("en-US", false)) };
+
+        // Create a map centered at specified coordinates
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: coordinates,
+            zoom: 5 // Adjust the zoom level as needed
+        });
+
+        // Optionally, add a marker at the specified coordinates
+        var marker = new google.maps.Marker({
+            position: coordinates,
+            map: map,
+            title: 'Your marker title' // Tooltip when hovering over the marker
+        });
+    }
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJ0zX_jCFehbDKqZCv7rNCaG4FnSp6MpU&callback=initMap">
+</script>
