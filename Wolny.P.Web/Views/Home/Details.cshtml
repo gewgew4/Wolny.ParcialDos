@@ -45,21 +45,31 @@
 <div id="map" style="height: 400px;"></div>
 <script>
     function initMap() {
-        // Specify your coordinates
-        var coordinates = { lat: @Model.PlanRecorridos.First().Ciudad.Ubicacion.Latitud.ToString("0,0.00", new CultureInfo("en-US", false)), lng: @Model.PlanRecorridos.First().Ciudad.Ubicacion.Longitud.ToString("0,0.00", new CultureInfo("en-US", false)) };
+        // Extract all coordinates from the PlanRecorridos
+        var coordinates = [
+    @foreach (var plan in Model.PlanRecorridos)
+    {
+        <text>{ lat: @plan.Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false)), lng: @plan.Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)) }, </text>
+    }
+            ];
 
-        // Create a map centered at specified coordinates
+        // Create a map centered at the first coordinate
         var map = new google.maps.Map(document.getElementById('map'), {
-            center: coordinates,
+            center: coordinates[0],
             zoom: 5 // Adjust the zoom level as needed
         });
 
-        // Optionally, add a marker at the specified coordinates
-        var marker = new google.maps.Marker({
-            position: coordinates,
-            map: map,
-            title: 'Your marker title' // Tooltip when hovering over the marker
+        // Create a polyline to connect the coordinates
+        var flightPath = new google.maps.Polyline({
+            path: coordinates,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
         });
+
+        // Set the polyline on the map
+        flightPath.setMap(map);
     }
 </script>
 <script async defer
