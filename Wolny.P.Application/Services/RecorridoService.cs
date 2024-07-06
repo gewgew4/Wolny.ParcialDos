@@ -93,6 +93,10 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
                 }
             }
 
+            var origenCiudad = listaCiudadesExistentes.FirstOrDefault(x => x.Id == entity.OrigenCiudadId) ?? throw new NotFoundException("Ciudad de origen inexistente");
+
+            // Agrego la ciudad de origen
+            ciudadesPorRecorrer.Add(origenCiudad);
             // Elimino duplicados
             ciudadesPorRecorrer = ciudadesPorRecorrer.DistinctBy(x => x.Id).ToList();
 
@@ -128,19 +132,19 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         switch (entity.AlgoritmoEnum)
         {
             case Helpers.AlgoritmoEnum.FuerzaBruta:
-                CalcularFuerzaBruta(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                CalcularFuerzaBruta(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta, entity.OrigenCiudadId);
                 break;
             case Helpers.AlgoritmoEnum.VecinosMasCercanos:
-                CalcularVecinoMasCercano(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                CalcularVecinoMasCercano(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta, entity.OrigenCiudadId);
                 break;
-            case Helpers.AlgoritmoEnum.Genetico:
-                CalcularGenetic(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+            case Helpers.AlgoritmoEnum.Voraz:
+                CalcularVoraz(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta, entity.OrigenCiudadId);
                 break;
             case Helpers.AlgoritmoEnum.RecocidoSimulado:
-                CalcularRecocidoSimulado(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                CalcularRecocidoSimulado(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta, entity.OrigenCiudadId);
                 break;
             case Helpers.AlgoritmoEnum.ColoniaHormigas:
-                CalcularColoniaHormigas(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                CalcularColoniaHormigas(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta, entity.OrigenCiudadId);
                 break;
             default:
                 throw new NotFoundException("Algoritmo inexistente");
@@ -170,11 +174,12 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
     }
 
     #region FuerzaBruta
-    private static void CalcularFuerzaBruta(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta)
+    private static void CalcularFuerzaBruta(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta, int origenCiudadId)
     {
         int[,] distanceMatrix = BuildDistanceMatrix(ciudadesPorRecorrer);
+        int originIndex = ciudadesPorRecorrer.FindIndex(c => c.Id == origenCiudadId);
 
-        var cities = Enumerable.Range(0, distanceMatrix.GetLength(0)).ToArray();
+        var cities = Enumerable.Range(0, distanceMatrix.GetLength(0)).Where(i => i != originIndex).ToArray();
 
         // Get all permutations of cities
         var permutations = GetPermutations(cities, cities.Length);
@@ -185,11 +190,15 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         // Calculate the distance for each permutation and find the minimum distance
         foreach (var perm in permutations)
         {
-            int currentDistance = CalculateRouteDistance(perm, distanceMatrix);
+            var route = new int[perm.Length + 1];
+            route[0] = originIndex;
+            Array.Copy(perm, 0, route, 1, perm.Length);
+
+            int currentDistance = CalculateRouteDistance(route, distanceMatrix);
             if (currentDistance < distanciaMinima)
             {
                 distanciaMinima = currentDistance;
-                mejorRuta = [.. perm];
+                mejorRuta = route;
             }
         }
     }
@@ -206,325 +215,295 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
     #endregion
 
     #region VecinoMasCercano
-    private static void CalcularVecinoMasCercano(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta)
+    private static void CalcularVecinoMasCercano(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta, int origenCiudadId)
     {
         int[,] distanceMatrix = BuildDistanceMatrix(ciudadesPorRecorrer);
+        int originIndex = ciudadesPorRecorrer.FindIndex(c => c.Id == origenCiudadId);
 
         // Find the best route using the Nearest Neighbor heuristic
-        mejorRuta = NearestNeighbor(distanceMatrix);
+        mejorRuta = NearestNeighbor(distanceMatrix, originIndex);
         distanciaMinima = CalculateRouteDistance(mejorRuta, distanceMatrix);
     }
 
-    static int[] NearestNeighbor(int[,] distanceMatrix)
+    static int[] NearestNeighbor(int[,] distanceMatrix, int originIndex)
     {
         int n = distanceMatrix.GetLength(0);
         bool[] visited = new bool[n];
         int[] route = new int[n];
-        int currentCity = 0;
-        visited[0] = true;
+        int currentCity = originIndex;
+        visited[originIndex] = true;
 
         for (int i = 1; i < n; i++)
         {
-            int nextCity = -1;
-            int minDistance = int.MaxValue;
+            int nearestCity = -1;
+            int nearestDistance = int.MaxValue;
+
             for (int j = 0; j < n; j++)
             {
-                if (!visited[j] && distanceMatrix[currentCity, j] < minDistance)
+                if (!visited[j] && distanceMatrix[currentCity, j] < nearestDistance)
                 {
-                    minDistance = distanceMatrix[currentCity, j];
-                    nextCity = j;
+                    nearestCity = j;
+                    nearestDistance = distanceMatrix[currentCity, j];
                 }
             }
-            route[i] = nextCity;
-            visited[nextCity] = true;
-            currentCity = nextCity;
+
+            route[i] = nearestCity;
+            visited[nearestCity] = true;
+            currentCity = nearestCity;
         }
 
         return route;
     }
     #endregion
 
-    #region Genetic
-    private static void CalcularGenetic(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta)
+    #region Voraz
+    private static void CalcularVoraz(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta, int origenCiudadId)
     {
+        int numberOfCities = ciudadesPorRecorrer.Count;
         int[,] distanceMatrix = BuildDistanceMatrix(ciudadesPorRecorrer);
+        int originIndex = ciudadesPorRecorrer.FindIndex(c => c.Id == origenCiudadId);
 
-        mejorRuta = GeneticAlgorithm(distanceMatrix, 100, 500, 0.01);
-        distanciaMinima = CalculateRouteDistance(mejorRuta, distanceMatrix);
-    }
+        bool[] visited = new bool[numberOfCities];
+        List<int> route = new List<int>();
 
-    static int[] GeneticAlgorithm(int[,] distanceMatrix, int populationSize, int generations, double mutationRate)
-    {
-        int n = distanceMatrix.GetLength(0);
-        var random = new Random();
-        List<int[]> population = InitializePopulation(populationSize, n);
+        route.Add(originIndex);
+        visited[originIndex] = true;
+        int currentCity = originIndex;
+        distanciaMinima = 0;
 
-        for (int generation = 0; generation < generations; generation++)
+        for (int i = 1; i < numberOfCities; i++)
         {
-            population = population.OrderBy(individual => CalculateRouteDistance(individual, distanceMatrix)).ToList();
+            int nearestCity = -1;
+            int shortestDistance = int.MaxValue;
 
-            var newPopulation = new List<int[]>();
-
-            for (int i = 0; i < populationSize / 2; i++)
+            for (int j = 0; j < numberOfCities; j++)
             {
-                var parent1 = population[random.Next(populationSize / 2)];
-                var parent2 = population[random.Next(populationSize / 2)];
-                var child1 = Crossover(parent1, parent2, random);
-                var child2 = Crossover(parent2, parent1, random);
-
-                if (random.NextDouble() < mutationRate)
+                if (!visited[j] && distanceMatrix[currentCity, j] < shortestDistance)
                 {
-                    Mutate(child1, random);
+                    nearestCity = j;
+                    shortestDistance = distanceMatrix[currentCity, j];
                 }
-
-                if (random.NextDouble() < mutationRate)
-                {
-                    Mutate(child2, random);
-                }
-
-                newPopulation.Add(child1);
-                newPopulation.Add(child2);
             }
 
-            population = newPopulation;
-        }
-
-        return population.OrderBy(individual => CalculateRouteDistance(individual, distanceMatrix)).First();
-    }
-
-    static List<int[]> InitializePopulation(int populationSize, int n)
-    {
-        var population = new List<int[]>();
-        var random = new Random();
-        for (int i = 0; i < populationSize; i++)
-        {
-            int[] individual = Enumerable.Range(0, n).OrderBy(x => random.Next()).ToArray();
-            population.Add(individual);
-        }
-
-        return population;
-    }
-
-    static int[] Crossover(int[] parent1, int[] parent2, Random random)
-    {
-        int n = parent1.Length;
-        int start = random.Next(n);
-        int end = random.Next(start, n);
-
-        int[] child = new int[n];
-        Array.Fill(child, -1);
-
-        for (int i = start; i < end; i++)
-        {
-            child[i] = parent1[i];
-        }
-
-        int currentIndex = end;
-        for (int i = 0; i < n; i++)
-        {
-            int city = parent2[(end + i) % n];
-            if (!child.Contains(city))
+            if (nearestCity != -1)
             {
-                child[currentIndex % n] = city;
-                currentIndex++;
+                route.Add(nearestCity);
+                visited[nearestCity] = true;
+                distanciaMinima += shortestDistance;
+                currentCity = nearestCity;
             }
         }
 
-        return child;
-    }
-
-    static void Mutate(int[] individual, Random random)
-    {
-        int n = individual.Length;
-        int index1 = random.Next(n);
-        int index2 = (index1 + 1 + random.Next(n - 1)) % n;
-
-        // Swap two cities
-        (individual[index2], individual[index1]) = (individual[index1], individual[index2]);
+        // Return to the origin city
+        route.Add(originIndex);
+        distanciaMinima += distanceMatrix[currentCity, originIndex];
+        mejorRuta = route.ToArray();
     }
     #endregion
 
     #region RecocidoSimulado
-    private static void CalcularRecocidoSimulado(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta)
+    private static void CalcularRecocidoSimulado(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta, int origenCiudadId)
     {
         int[,] distanceMatrix = BuildDistanceMatrix(ciudadesPorRecorrer);
+        int originIndex = ciudadesPorRecorrer.FindIndex(c => c.Id == origenCiudadId);
 
-        // Parameters for Simulated Annealing
-        double initialTemperature = 10000;
-        double coolingRate = 0.003;
-
-        mejorRuta = SimulatedAnnealing(distanceMatrix, initialTemperature, coolingRate);
-        distanciaMinima = CalculateRouteDistance(mejorRuta, distanceMatrix);
-
-        static int[] SimulatedAnnealing(int[,] distanceMatrix, double initialTemperature, double coolingRate)
+        int n = ciudadesPorRecorrer.Count;
+        int[] currentSolution = new int[n];
+        int[] bestSolution = new int[n];
+        for (int i = 0; i < n; i++)
         {
-            int n = distanceMatrix.GetLength(0);
-            var random = new Random();
-
-            int[] currentSolution = Enumerable.Range(0, n).ToArray();
-            int[] bestSolution = (int[])currentSolution.Clone();
-
-            double currentTemperature = initialTemperature;
-
-            while (currentTemperature > 1)
-            {
-                int[] newSolution = (int[])currentSolution.Clone();
-
-                int swapIndex1 = random.Next(n);
-                int swapIndex2 = (swapIndex1 + random.Next(1, n)) % n;
-
-                // Swap two cities
-                (newSolution[swapIndex2], newSolution[swapIndex1]) = (newSolution[swapIndex1], newSolution[swapIndex2]);
-
-                int currentEnergy = CalculateRouteDistance(currentSolution, distanceMatrix);
-                int newEnergy = CalculateRouteDistance(newSolution, distanceMatrix);
-
-                if (AcceptanceProbability(currentEnergy, newEnergy, currentTemperature) > random.NextDouble())
-                {
-                    currentSolution = newSolution;
-                }
-
-                if (CalculateRouteDistance(currentSolution, distanceMatrix) < CalculateRouteDistance(bestSolution, distanceMatrix))
-                {
-                    bestSolution = (int[])currentSolution.Clone();
-                }
-
-                currentTemperature *= 1 - coolingRate;
-            }
-
-            return bestSolution;
+            currentSolution[i] = i;
+            bestSolution[i] = i;
         }
 
-        static double AcceptanceProbability(int currentEnergy, int newEnergy, double temperature)
+        // Ensure the origin city is at the start of the route
+        Swap(ref currentSolution[0], ref currentSolution[originIndex]);
+        Swap(ref bestSolution[0], ref bestSolution[originIndex]);
+
+        int currentDistance = CalculateRouteDistance(currentSolution, distanceMatrix);
+        int bestDistance = currentDistance;
+
+        double temperature = 10000;
+        double coolingRate = 0.9995;
+        int iterations = 100000;
+
+        Random rng = new Random();
+
+        for (int i = 0; i < iterations; i++)
         {
-            if (newEnergy < currentEnergy)
+            int[] newSolution = (int[])currentSolution.Clone();
+
+            int swapIndex1 = rng.Next(1, n);
+            int swapIndex2 = rng.Next(1, n);
+
+            Swap(ref newSolution[swapIndex1], ref newSolution[swapIndex2]);
+
+            int newDistance = CalculateRouteDistance(newSolution, distanceMatrix);
+
+            if (AcceptanceProbability(currentDistance, newDistance, temperature) > rng.NextDouble())
             {
-                return 1.0;
+                currentSolution = newSolution;
+                currentDistance = newDistance;
             }
-            return Math.Exp((currentEnergy - newEnergy) / temperature);
+
+            if (currentDistance < bestDistance)
+            {
+                bestSolution = (int[])currentSolution.Clone();
+                bestDistance = currentDistance;
+            }
+
+            temperature *= coolingRate;
         }
+
+        distanciaMinima = bestDistance;
+        mejorRuta = bestSolution;
+    }
+
+    private static void Swap(ref int a, ref int b)
+    {
+        int temp = a;
+        a = b;
+        b = temp;
+    }
+
+    private static double AcceptanceProbability(int currentDistance, int newDistance, double temperature)
+    {
+        if (newDistance < currentDistance)
+        {
+            return 1.0;
+        }
+        return Math.Exp((currentDistance - newDistance) / temperature);
     }
     #endregion
 
     #region ColoniaHormigas
-    private static void CalcularColoniaHormigas(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta)
+    private static void CalcularColoniaHormigas(List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta, int originCityId)
     {
+        int n = ciudadesPorRecorrer.Count;
+        int originIndex = ciudadesPorRecorrer.FindIndex(c => c.Id == originCityId);
         int[,] distanceMatrix = BuildDistanceMatrix(ciudadesPorRecorrer);
 
-        // Parameters for Ant Colony Optimization
-        int numberOfAnts = 20;
-        int numberOfIterations = 100;
-        double alpha = 1.0; // Pheromone importance
-        double beta = 2.0;  // Distance importance
-        double evaporationRate = 0.5;
-        double initialPheromoneValue = 1.0;
+        double alpha = 1.0;  // Pheromone importance
+        double beta = 2.0;   // Distance importance
+        double evaporation = 0.5;
+        double Q = 100;  // Total amount of pheromone
+        int numAnts = 10;
+        int maxIterations = 100;
 
-        mejorRuta = AntColonyOptimization(distanceMatrix, numberOfAnts, numberOfIterations, alpha, beta, evaporationRate, initialPheromoneValue);
-        distanciaMinima = CalculateRouteDistance(mejorRuta, distanceMatrix);
-
-        static int[] AntColonyOptimization(int[,] distanceMatrix, int numberOfAnts, int numberOfIterations, double alpha, double beta, double evaporationRate, double initialPheromoneValue)
+        double[,] pheromones = new double[n, n];
+        for (int i = 0; i < n; i++)
         {
-            int n = distanceMatrix.GetLength(0);
-            double[,] pheromoneLevels = new double[n, n];
-            var random = new Random();
+            for (int j = 0; j < n; j++)
+            {
+                pheromones[i, j] = 1.0;
+            }
+        }
 
-            // Initialize pheromone levels
+        int[] bestRoute = null;
+        int bestDistance = int.MaxValue;
+        Random rng = new Random();
+
+        for (int iteration = 0; iteration < maxIterations; iteration++)
+        {
+            List<int[]> routes = new List<int[]>();
+            List<int> distances = new List<int>();
+
+            for (int ant = 0; ant < numAnts; ant++)
+            {
+                int[] route = new int[n];
+                bool[] visited = new bool[n];
+                route[0] = originIndex;
+                visited[originIndex] = true;
+
+                for (int i = 1; i < n; i++)
+                {
+                    int currentCity = route[i - 1];
+                    int nextCity = SelectNextCity(currentCity, visited, pheromones, distanceMatrix, alpha, beta, rng);
+                    route[i] = nextCity;
+                    visited[nextCity] = true;
+                }
+
+                int routeDistance = CalculateRouteDistance(route, distanceMatrix);
+                routes.Add(route);
+                distances.Add(routeDistance);
+
+                if (routeDistance < bestDistance)
+                {
+                    bestDistance = routeDistance;
+                    bestRoute = (int[])route.Clone();
+                }
+            }
+
+            // Update pheromones
             for (int i = 0; i < n; i++)
             {
                 for (int j = 0; j < n; j++)
                 {
-                    pheromoneLevels[i, j] = initialPheromoneValue;
+                    pheromones[i, j] *= (1 - evaporation);
                 }
             }
 
-            int[] bestSolution = null;
-            int bestSolutionLength = int.MaxValue;
-
-            for (int iteration = 0; iteration < numberOfIterations; iteration++)
+            for (int ant = 0; ant < numAnts; ant++)
             {
-                int[][] solutions = new int[numberOfAnts][];
-                int[] solutionLengths = new int[numberOfAnts];
+                int[] route = routes[ant];
+                int routeDistance = distances[ant];
 
-                for (int k = 0; k < numberOfAnts; k++)
+                for (int i = 0; i < n - 1; i++)
                 {
-                    solutions[k] = GenerateSolution(n, distanceMatrix, pheromoneLevels, alpha, beta, random);
-                    solutionLengths[k] = CalculateRouteDistance(solutions[k], distanceMatrix);
-
-                    if (solutionLengths[k] < bestSolutionLength)
-                    {
-                        bestSolution = solutions[k];
-                        bestSolutionLength = solutionLengths[k];
-                    }
+                    int city1 = route[i];
+                    int city2 = route[i + 1];
+                    pheromones[city1, city2] += Q / routeDistance;
+                    pheromones[city2, city1] += Q / routeDistance;
                 }
-
-                // Evaporate pheromones
-                for (int i = 0; i < n; i++)
-                {
-                    for (int j = 0; j < n; j++)
-                    {
-                        pheromoneLevels[i, j] *= (1 - evaporationRate);
-                    }
-                }
-
-                // Deposit new pheromones
-                for (int k = 0; k < numberOfAnts; k++)
-                {
-                    for (int i = 0; i < n - 1; i++)
-                    {
-                        pheromoneLevels[solutions[k][i], solutions[k][i + 1]] += 1.0 / solutionLengths[k];
-                    }
-                    pheromoneLevels[solutions[k][n - 1], solutions[k][0]] += 1.0 / solutionLengths[k];
-                }
+                int lastCity = route[n - 1];
+                int firstCity = route[0];
+                pheromones[lastCity, firstCity] += Q / routeDistance;
+                pheromones[firstCity, lastCity] += Q / routeDistance;
             }
-
-            return bestSolution;
         }
 
-        static int[] GenerateSolution(int n, int[,] distanceMatrix, double[,] pheromoneLevels, double alpha, double beta, Random random)
+        distanciaMinima = bestDistance;
+        mejorRuta = bestRoute;
+    }
+
+    private static int SelectNextCity(int currentCity, bool[] visited, double[,] pheromones, int[,] distanceMatrix, double alpha, double beta, Random rng)
+    {
+        int n = visited.Length;
+        double[] probabilities = new double[n];
+        double sum = 0.0;
+
+        for (int i = 0; i < n; i++)
         {
-            List<int> unvisitedCities = Enumerable.Range(0, n).ToList();
-            int[] solution = new int[n];
-            int currentCity = random.Next(n);
-            solution[0] = currentCity;
-            unvisitedCities.Remove(currentCity);
-
-            for (int i = 1; i < n; i++)
+            if (!visited[i])
             {
-                int nextCity = SelectNextCity(currentCity, unvisitedCities, distanceMatrix, pheromoneLevels, alpha, beta, random);
-                solution[i] = nextCity;
-                unvisitedCities.Remove(nextCity);
-                currentCity = nextCity;
-            }
-
-            return solution;
-        }
-
-        static int SelectNextCity(int currentCity, List<int> unvisitedCities, int[,] distanceMatrix, double[,] pheromoneLevels, double alpha, double beta, Random random)
-        {
-            double[] probabilities = new double[unvisitedCities.Count];
-            double sum = 0.0;
-
-            for (int i = 0; i < unvisitedCities.Count; i++)
-            {
-                int nextCity = unvisitedCities[i];
-                probabilities[i] = Math.Pow(pheromoneLevels[currentCity, nextCity], alpha) * Math.Pow(1.0 / distanceMatrix[currentCity, nextCity], beta);
+                probabilities[i] = Math.Pow(pheromones[currentCity, i], alpha) * Math.Pow(1.0 / distanceMatrix[currentCity, i], beta);
                 sum += probabilities[i];
             }
+        }
 
-            double randomValue = random.NextDouble() * sum;
-            double cumulative = 0.0;
-
-            for (int i = 0; i < probabilities.Length; i++)
+        double randomValue = rng.NextDouble() * sum;
+        for (int i = 0; i < n; i++)
+        {
+            if (!visited[i])
             {
-                cumulative += probabilities[i];
-                if (cumulative >= randomValue)
+                randomValue -= probabilities[i];
+                if (randomValue <= 0)
                 {
-                    return unvisitedCities[i];
+                    return i;
                 }
             }
-
-            return unvisitedCities[0];
         }
+
+        // Fallback in case of rounding errors
+        for (int i = 0; i < n; i++)
+        {
+            if (!visited[i])
+            {
+                return i;
+            }
+        }
+
+        return -1;  // Should never reach here
     }
     #endregion
 

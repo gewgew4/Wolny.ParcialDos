@@ -4,7 +4,7 @@ public enum AlgoritmoEnum
 {
     FuerzaBruta,
     VecinosMasCercanos,
-    Genetico,
+    Voraz,
     RecocidoSimulado,
     ColoniaHormigas
 }
