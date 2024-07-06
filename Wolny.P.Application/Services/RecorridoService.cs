@@ -96,37 +96,15 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
             // Elimino duplicados
             ciudadesPorRecorrer = ciudadesPorRecorrer.DistinctBy(x => x.Id).ToList();
 
-            var distanciaMinima = 0;
-            int[] mejorRuta = null;
-
+            // Bench tiempo
             var sw = new Stopwatch();
             sw.Start();
-            switch (entity.AlgoritmoEnum)
-            {
-                case Helpers.AlgoritmoEnum.FuerzaBruta:
-                    CalcularFuerzaBruta(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
-                    break;
-                case Helpers.AlgoritmoEnum.VecinosMasCercanos:
-                    CalcularVecinoMasCercano(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
-                    break;
-                case Helpers.AlgoritmoEnum.Genetico:
-                    CalcularGenetic(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
-                    break;
-                case Helpers.AlgoritmoEnum.RecocidoSimulado:
-                    CalcularRecocidoSimulado(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
-                    break;
-                case Helpers.AlgoritmoEnum.ColoniaHormigas:
-                    CalcularColoniaHormigas(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
-                    break;
-                default:
-                    throw new NotFoundException("Algoritmo inexistente");
-            }
+            ElegirAlgoritmo(entity, ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta);
             sw.Stop();
 
-            // Output the best route and its distance
-            Console.WriteLine("Best route: " + string.Join(" -> ", mejorRuta.Select(i => ciudadesPorRecorrer[i].Nombre)) + " -> " + ciudadesPorRecorrer[mejorRuta[0]].Nombre);
-            Console.WriteLine("Minimum distance: " + distanciaMinima);
-            Console.WriteLine($"Elapsed: {sw.Elapsed} - {sw.ElapsedMilliseconds} - {sw.ElapsedTicks}");
+            Console.WriteLine("Mejor ruta: " + string.Join(" -> ", mejorRuta.Select(i => ciudadesPorRecorrer[i].Nombre)) + " -> " + ciudadesPorRecorrer[mejorRuta[0]].Nombre);
+            Console.WriteLine("Distancia mínima: " + distanciaMinima);
+            Console.WriteLine($"Tiempo - milisegundos - ticks: {sw.Elapsed} - {sw.ElapsedMilliseconds} - {sw.ElapsedTicks}");
 
             var recorrido = CrearRecorrido(ciudadesPorRecorrer, pedidosPorRecorrer, existingCamion, mejorRuta);
 
@@ -145,6 +123,30 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         }
     }
 
+    private static void ElegirAlgoritmo(GenerarRecorrido entity, List<Ciudad> ciudadesPorRecorrer, out int distanciaMinima, out int[] mejorRuta)
+    {
+        switch (entity.AlgoritmoEnum)
+        {
+            case Helpers.AlgoritmoEnum.FuerzaBruta:
+                CalcularFuerzaBruta(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                break;
+            case Helpers.AlgoritmoEnum.VecinosMasCercanos:
+                CalcularVecinoMasCercano(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                break;
+            case Helpers.AlgoritmoEnum.Genetico:
+                CalcularGenetic(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                break;
+            case Helpers.AlgoritmoEnum.RecocidoSimulado:
+                CalcularRecocidoSimulado(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                break;
+            case Helpers.AlgoritmoEnum.ColoniaHormigas:
+                CalcularColoniaHormigas(ciudadesPorRecorrer, out distanciaMinima, out mejorRuta);
+                break;
+            default:
+                throw new NotFoundException("Algoritmo inexistente");
+        }
+    }
+
     private static Recorrido CrearRecorrido(List<Ciudad> ciudadesPorRecorrer, List<Pedido> pedidosPorRecorrer, Camion existingCamion, int[] mejorRuta)
     {
         var planRecorridos = new List<PlanRecorrido>();
@@ -153,8 +155,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
             planRecorridos.Add(new PlanRecorrido
             {
                 CiudadId = ciudadesPorRecorrer[mejorRuta[i]].Id,
-                Prioridad = i + 1,
-
+                Prioridad = i + 1
             });
         }
 
@@ -164,6 +165,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
             Pedidos = pedidosPorRecorrer,
             PlanRecorridos = planRecorridos
         };
+
         return recorrido;
     }
 
@@ -187,7 +189,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
             if (currentDistance < distanciaMinima)
             {
                 distanciaMinima = currentDistance;
-                mejorRuta = perm.ToArray();
+                mejorRuta = [.. perm];
             }
         }
     }
@@ -199,7 +201,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
 
         return GetPermutations(list, length - 1)
             .SelectMany(t => list.Where(e => !t.Contains(e)),
-                        (t1, t2) => t1.Concat(new int[] { t2 }).ToArray());
+                        (t1, t2) => t1.Concat([t2]).ToArray());
     }
     #endregion
 
@@ -254,14 +256,14 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
     static int[] GeneticAlgorithm(int[,] distanceMatrix, int populationSize, int generations, double mutationRate)
     {
         int n = distanceMatrix.GetLength(0);
-        Random random = new Random();
+        var random = new Random();
         List<int[]> population = InitializePopulation(populationSize, n);
 
         for (int generation = 0; generation < generations; generation++)
         {
             population = population.OrderBy(individual => CalculateRouteDistance(individual, distanceMatrix)).ToList();
 
-            List<int[]> newPopulation = new List<int[]>();
+            var newPopulation = new List<int[]>();
 
             for (int i = 0; i < populationSize / 2; i++)
             {
@@ -292,13 +294,14 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
 
     static List<int[]> InitializePopulation(int populationSize, int n)
     {
-        List<int[]> population = new List<int[]>();
-        Random random = new Random();
+        var population = new List<int[]>();
+        var random = new Random();
         for (int i = 0; i < populationSize; i++)
         {
             int[] individual = Enumerable.Range(0, n).OrderBy(x => random.Next()).ToArray();
             population.Add(individual);
         }
+
         return population;
     }
 
@@ -337,9 +340,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         int index2 = (index1 + 1 + random.Next(n - 1)) % n;
 
         // Swap two cities
-        int temp = individual[index1];
-        individual[index1] = individual[index2];
-        individual[index2] = temp;
+        (individual[index2], individual[index1]) = (individual[index1], individual[index2]);
     }
     #endregion
 
@@ -373,9 +374,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
                 int swapIndex2 = (swapIndex1 + random.Next(1, n)) % n;
 
                 // Swap two cities
-                int temp = newSolution[swapIndex1];
-                newSolution[swapIndex1] = newSolution[swapIndex2];
-                newSolution[swapIndex2] = temp;
+                (newSolution[swapIndex2], newSolution[swapIndex1]) = (newSolution[swapIndex1], newSolution[swapIndex2]);
 
                 int currentEnergy = CalculateRouteDistance(currentSolution, distanceMatrix);
                 int newEnergy = CalculateRouteDistance(newSolution, distanceMatrix);
@@ -427,7 +426,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         {
             int n = distanceMatrix.GetLength(0);
             double[,] pheromoneLevels = new double[n, n];
-            Random random = new Random();
+            var random = new Random();
 
             // Initialize pheromone levels
             for (int i = 0; i < n; i++)
