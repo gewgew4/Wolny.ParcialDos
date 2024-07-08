@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Wolny.P.Application;
 using Wolny.P.Infrastructure;
 
@@ -24,6 +25,13 @@ public class Program
 
         builder.Services.InfrastructureConfigureServices(builder.Configuration);
         builder.Services.ApplicationConfigureServices(builder.Configuration);
+
+        builder.Services.AddLogging(loggingBuilder => {
+            loggingBuilder.AddConsole()
+                .AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information);
+            loggingBuilder.AddDebug();
+        });
+
 
         builder.WebHost.ConfigureKestrel(serverOptions =>
         {

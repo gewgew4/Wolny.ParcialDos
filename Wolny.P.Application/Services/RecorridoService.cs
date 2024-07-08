@@ -24,7 +24,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
 
     public async Task<Result<List<Recorrido>>> GetAllAsync()
     {
-        var listEntity = await unitOfWork.RecorridoRepo.GetAll();
+        var listEntity = await unitOfWork.RecorridoRepo.GetAll(includeProperties: "Camion");
 
         return Result<List<Recorrido>>.Ok(listEntity);
     }

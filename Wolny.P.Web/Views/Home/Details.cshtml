@@ -5,7 +5,19 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1>Detalle de un recorrido</h1>
+<p>
+    En línea azul, se muestra el recorrido calculado por el algoritmo seleccionado en su momento
+</p>
+<p>
+    Los marcadores en rojo indican las ciudades adonde todavía no fueron alcanzadas por el camión en el recorrido
+</p>
+<p>
+    Los marcadores en verde indican las ciudades que ya fueron visitadas por el camión
+</p>
+<p>
+    El marcador azul muestra el camión si el recorrido no está finalizado
+</p>
 
 <div>
     <h4>Recorrido</h4>
@@ -37,12 +49,12 @@
         </dd>
         @if (Model.Camion != null)
         {
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Camion)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Camion.Patente)
-        </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Camion)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Camion.Patente)
+            </dd>
         }
     </dl>
 </div>
@@ -50,34 +62,94 @@
 <div id="map" style="height: 400px;"></div>
 <script>
     function initMap() {
-        // Extract all coordinates from the PlanRecorridos
-        var coordinates = [
+        // Extract all coordinates and names from the PlanRecorridos
+        var coordinates = [];
+        var markers = [];
+
     @foreach (var plan in Model.PlanRecorridos)
     {
-        <text>{ lat: @plan.Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false)), lng: @plan.Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)) }, </text>
+        <text>
+                coordinates.push({
+                    lat: @Html.Raw(plan.Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false))),
+                    lng: @Html.Raw(plan.Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)))
+                                });
+            markers.push({
+                lat: @Html.Raw(plan.Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false))),
+                lng: @Html.Raw(plan.Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false))),
+                name: '@plan.Ciudad.Nombre',
+                finalizado: @plan.Finalizado.ToString().ToLower() // Convert the boolean to a lowercase string
+                                });
+        </text>
     }
-                ];
 
-        // Add the first coordinate again to close the circle
-        coordinates.push({ lat: @Model.PlanRecorridos.First().Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false)), lng: @Model.PlanRecorridos.First().Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)) });
+            // Add the first coordinate again to close the circle
+            coordinates.push({
+                lat: @Html.Raw(Model.PlanRecorridos.First().Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false))),
+                lng: @Html.Raw(Model.PlanRecorridos.First().Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)))
+                });
 
         // Create a map centered at the first coordinate
         var map = new google.maps.Map(document.getElementById('map'), {
             center: coordinates[0],
-            zoom: 5 // Adjust the zoom level as needed
+            zoom: 4 // Adjust the zoom level as needed
         });
 
         // Create a polyline to connect the coordinates
         var flightPath = new google.maps.Polyline({
             path: coordinates,
             geodesic: true,
-            strokeColor: '#FF0000',
+            strokeColor: '#0000FF',
             strokeOpacity: 1.0,
             strokeWeight: 2
         });
 
         // Set the polyline on the map
         flightPath.setMap(map);
+
+        // Add markers to the map
+        markers.forEach(function (marker) {
+            var markerIcon = marker.finalizado ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png' : 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+
+            var cityMarker = new google.maps.Marker({
+                position: { lat: marker.lat, lng: marker.lng },
+                map: map,
+                title: marker.name,
+                icon: markerIcon
+            });
+
+            // Add an info window for the marker
+            var infoWindow = new google.maps.InfoWindow({
+                content: marker.name
+            });
+
+            // Add a click listener to open the info window
+            cityMarker.addListener('click', function () {
+                infoWindow.open(map, cityMarker);
+            });
+        });
+
+        // Add a marker for the Camion if Model.Finalizado is false
+        if (@Model.Finalizado.ToString().ToLower() == false) {
+            var camionMarker = new google.maps.Marker({
+                position: {
+                    lat: @Html.Raw(Model.Camion.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false))),
+                    lng: @Html.Raw(Model.Camion.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)))
+                        },
+                map: map,
+                title: '@Model.Camion.Patente',
+                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' // Using a blue marker for the Camion
+            });
+
+            // Add an info window for the camion marker
+            var camionInfoWindow = new google.maps.InfoWindow({
+                content: '@Model.Camion.Patente'
+            });
+
+            // Add a click listener to open the info window
+            camionMarker.addListener('click', function () {
+                camionInfoWindow.open(map, camionMarker);
+            });
+        }
     }
 </script>
 <script async defer

@@ -88,7 +88,7 @@ namespace Wolny.P.Web.Controllers
 
             var result = new PuntoUnoModel
             {
-                Pedidos = resultPedidos,
+                Pedidos = resultPedidos.OrderBy(x=> x.Id).ToList(),
                 Ciudades = resultCiudades
             };
             return View(result);
