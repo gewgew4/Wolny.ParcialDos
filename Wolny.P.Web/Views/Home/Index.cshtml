@@ -3,6 +3,65 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Parcial Wolny Gabriel</h1>
+    <h2>Notas:</h2>
+    <p>Para generar un recorrido, se necesitan generar pedidos.</p>
+    <p>Ya en base de datos, hay pedidos cargados listos para ser añadidos a un recorrido</p>
+    <p>
+        Simplemente a un pedido se le asigna una ciudad donde está designada: está pensado para que un pedido
+        implique ser parte de un recorrido
+    </p>
+    <h2>Punto uno</h2>
+    <p>
+        1. Simplemente hay que dirigirse a <a asp-action="PedidosSinRecorrido">
+            "Punto 1 (Pedidos
+            sin recorrido)"
+        </a>
+    </p>
+    <p>
+        2. Ahí se seleccionan los pedidos (que involucran una ciudad), la ciudad de origen del recorrido y
+        el algoritmo (fuerza bruta u otros más que son heurísticos)
+    </p>
+    <p>
+        3. Se presiona "Crear recorrido" y se obtiene la información del recorrido resultante y cuanto tiempo
+        demoró el algoritmo
+    </p>
+    <h2>Punto cinco</h2>
+    <p>
+        4. Continúa de los pasos anteriores del "Punto uno", simplemente presionar "Ver mapa" para observar el recorrido
+        generado
+    </p>
+    <p>
+        Sino, se puede acceder desde <a asp-action="Recorridos">el listado de recorridos</a> y luego
+        haciendo clic en "Punto 5" de un recorrido (por ejemplo, <a href="Home/Details/1">
+            este es el link
+            para el Recorrido con Id 1
+        </a>)
+    </p>
+    <h2>Punto dos</h2>
+    <p>
+        Ir <a asp-action="Camiones">al listado de camiones</a> y hacer clic en "Punto 2" (por ejemplo, <a href="Home/PuntoDos?patente=XYZ0">
+            este es el link
+            para el camion con patente "XYZ0"
+        </a>)
+    </p>
+    <h2>Punto tres</h2>
+    <p>
+        Ir <a asp-action="Camiones">al listado de camiones</a> y hacer clic en <a asp-action="PuntoTres">"Punto 3"</a>
+    </p>
+    <h2>Punto cuatro y siete</h2>
+    <p>
+        Ir <a asp-action="Camiones">al listado de camiones</a> y hacer clic en <a asp-action="PuntoCuatro">"Punto 4/7"</a>
+    </p>
+    <h2>Punto seis</h2>
+    <p>
+        1. Ir <a asp-action="Camiones">al listado de camiones</a> y hacer clic en "Punto 2" (por ejemplo, <a href="Home/PuntoDos?patente=XYZ0">
+            este es el link para el camion con patente "XYZ0"
+        </a>)
+    </p>
+    <p>
+        2. Hacer clic en "Id x | Ver detalle | Punto 6" (por ejemplo, <a href="Home/Details/1">
+            este es el link para el recorrido con id "1"
+        </a>)
+    </p>
 </div>

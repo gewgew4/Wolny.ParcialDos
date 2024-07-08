@@ -63,8 +63,8 @@ public class RecorridoController(IRecorridoService service) : ControllerBase
         return WebApiResponse.GetErrorResponse(result);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<Recorrido>> Post(GenerarRecorrido entity)
+    [HttpPost("PuntoUno")]
+    public async Task<ActionResult<dynamic>> Post(GenerarRecorrido entity)
     {
         var result = await service.GenerarRecorrido(entity);
 

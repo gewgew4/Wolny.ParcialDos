@@ -12,7 +12,7 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
 {
     public async Task<Result<Recorrido>> GetByIdAsync(int id)
     {
-        var entity = await unitOfWork.RecorridoRepo.GetById(id);
+        var entity = await unitOfWork.RecorridoRepo.GetById(id, includeProperties: ["Camion", "Pedidos", "PlanRecorridos"]);
 
         if (entity == null)
         {
@@ -34,7 +34,8 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         var listEntity = await unitOfWork.RecorridoRepo.GetWhere(
             x => x.Camion.Patente == request.Patente && x.Finalizado == request.Finalizado,
             request.Ascending ? o => o.OrderBy(y => y.FechaInicio) : o => o.OrderByDescending(y => y.FechaInicio),
-            request.Top);
+            request.Top,
+            includeProperties: ["Camion"]);
 
         return Result<List<Recorrido>>.Ok(listEntity.ToList());
     }
@@ -69,13 +70,13 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         return Result<Recorrido>.Ok(await unitOfWork.RecorridoRepo.Update(existing));
     }
 
-    public async Task<Result<Recorrido>> GenerarRecorrido(GenerarRecorrido entity)
+    public async Task<Result<dynamic>> GenerarRecorrido(GenerarRecorrido entity)
     {
         try
         {
             var ciudadesPorRecorrer = new List<Ciudad>();
             var pedidosPorRecorrer = new List<Pedido>();
-            Camion? existingCamion= null;
+            Camion? existingCamion = null;
             var listaCiudadesExistentes = await unitOfWork.CiudadRepo.GetAll();
 
             // Validaciones
@@ -129,15 +130,26 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
             await unitOfWork.RecorridoRepo.Add(recorrido);
             await unitOfWork.SaveAsync();
 
-            return Result<Recorrido>.Ok(recorrido);
+            var newRecorrido = new
+            {
+                RecorridoId = recorrido.Id,
+                entity.PedidoIds,
+                MejorRuta = string.Join(" -> ", mejorRuta.Select(i => ciudadesPorRecorrer[i].Nombre)) + " -> " + ciudadesPorRecorrer[mejorRuta[0]].Nombre,
+                DistanciaMinima = distanciaMinima,
+                Tiempo = sw.Elapsed,
+                Milisegundos = sw.ElapsedMilliseconds,
+                Ticks = sw.ElapsedTicks
+            };
+
+            return Result<dynamic>.Ok(newRecorrido);
         }
         catch (NotFoundException ex)
         {
-            return Result<Recorrido>.Fail(ResultType.NotFound, [ex.Message]);
+            return Result<dynamic>.Fail(ResultType.NotFound, [ex.Message]);
         }
         catch (InvalidException ex)
         {
-            return Result<Recorrido>.Fail(ResultType.Invalid, [ex.Message]);
+            return Result<dynamic>.Fail(ResultType.Invalid, [ex.Message]);
         }
     }
 

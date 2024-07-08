@@ -7,16 +7,16 @@
 <h1>Recorridos</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    Listado de todos los recorridos
 </p>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.FechaFin)
+               Fecha de inicio
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FechaInicio)
+                Fecha fin
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Finalizado)
@@ -28,26 +28,25 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaFin)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaInicio)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Finalizado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-            <td>
-                @* @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) | *@
-                @Html.ActionLink("Punto 5", "Details", new { id = item.Id }) |
-                @* @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ }) *@
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FechaInicio)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FechaFin)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Finalizado)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.ActionLink("Punto 5", "Details", new { id = item.Id })
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

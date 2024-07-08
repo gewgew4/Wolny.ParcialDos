@@ -7,7 +7,7 @@
 <h1>Camiones</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    Listado de camiones
 </p>
 @Html.ActionLink("Punto 3", "PuntoTres") |
 @Html.ActionLink("Punto 4/7", "PuntoCuatro") |
@@ -41,9 +41,7 @@
                     @Html.DisplayFor(modelItem => item.Id)
                 </td>
                 <td>
-                    @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                    @Html.ActionLink("Punto 2", "PuntoDos", new { patente = item.Patente }) |
-                    @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                    @Html.ActionLink("Punto 2", "PuntoDos", new { patente = item.Patente })
                 </td>
             </tr>
         }

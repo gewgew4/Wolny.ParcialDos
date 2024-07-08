@@ -42,6 +42,8 @@ namespace Wolny.P.Web.Controllers
 
         public async Task<ActionResult<List<RecorridoModel>>> PuntoDos(string patente)
         {
+            ViewBag.Patente = patente;
+
             var url = $"https://localhost:7168/api/Recorrido/puntoDos?Top=10&Descending=true&Patente={patente}&Finalizado=true";
 
             var result = await LlamadaHttp<List<RecorridoModel>>(httpClientFactory, url, HttpMethod.Get);
@@ -75,8 +77,9 @@ namespace Wolny.P.Web.Controllers
             return View(result);
         }
 
-        public async Task<ActionResult<PuntoUnoModel>> PedidosSinRecorrido()
+        public async Task<ActionResult<PuntoUnoModel>> PedidosSinRecorrido(string error = "")
         {
+            ViewBag.Error = error;
             var urlPedidos = "https://localhost:7168/api/Pedido/SinRecorrido";
             var urlCiudades = "https://localhost:7168/api/Ciudad";
 
@@ -91,22 +94,78 @@ namespace Wolny.P.Web.Controllers
             return View(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> SubmitSelectedPedidos(List<int> selectedPedidos, int selectedCiudad)
+        public async Task<ActionResult<PedidoModel>> ListPedidos()
         {
-            var url = "https://localhost:7168/api/Recorrido";
+            var url = "https://localhost:7168/api/Pedido";
 
-            var x = JsonContent.Create(new { pedidoIds = selectedPedidos, algoritmoEnum = 0, origenCiudadId = selectedCiudad });
+            var result = await LlamadaHttp<List<PedidoModel>>(httpClientFactory, url, HttpMethod.Get);
 
-            var resultPedidos = await LlamadaHttp<RecorridoModel>(httpClientFactory, url, HttpMethod.Post, x);
-
-            // Log or process the payload as needed
-            // For example, send it to an API, save to database, etc.
-
-            return RedirectToAction("Index", "Home"); // Redirect back to the listing page
+            return View(result);
         }
 
+        [HttpGet]
+        public async Task<ActionResult<PedidoModel>> AltaPedidos()
+        {
+            var urlCiudades = "https://localhost:7168/api/Ciudad";
 
+            var resultCiudades = await LlamadaHttp<List<CiudadModel>>(httpClientFactory, urlCiudades, HttpMethod.Get);
+
+            ViewBag.Ciudades = resultCiudades;
+
+            return View();
+        }
+
+        [HttpPost]
+
+        public async Task<ActionResult<PedidoModel>> AltaPedidos(PedidoModel entity)
+        {
+            var url = "https://localhost:7168/api/Pedido";
+
+            var x = JsonContent.Create(new { CiudadId = entity.Ciudad.Id, entity.Entregado });
+
+            var result = await LlamadaHttp<PedidoModel>(httpClientFactory, url, HttpMethod.Post, x);
+
+            return RedirectToAction("ListPedidos");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitSelectedPedidos(List<string> selectedPedidos, int selectedCiudad, int selectedAlgo)
+        {
+            var listaCiudades = new List<int>();
+            var listaPedidos = new List<int>();
+
+            // Validaciones
+            if (selectedPedidos.Count < 1)
+            {
+                return RedirectToAction("PedidosSinRecorrido", new { error = "Tenés que seleccionar al menos un pedido" });
+            }
+
+            foreach (var item in selectedPedidos)
+            {
+                var cortado = item.Split(';');
+                listaPedidos.Add(int.Parse(cortado[0]));
+                listaCiudades.Add(int.Parse(cortado[1]));
+            }
+            listaCiudades = listaCiudades.Distinct().ToList();
+
+            if (listaCiudades.Count == 1 && listaCiudades.First() == selectedCiudad)
+            {
+                return RedirectToAction("PedidosSinRecorrido", new { error = "La ciudad de origen es la misma que la de los pedidos" });
+            }
+
+            var url = "https://localhost:7168/api/Recorrido/PuntoUno";
+
+            var x = JsonContent.Create(new { pedidoIds = listaPedidos, algoritmoEnum = selectedAlgo, origenCiudadId = selectedCiudad });
+
+            var resultPedidos = await LlamadaHttp<ResultadoRecorridoModel>(httpClientFactory, url, HttpMethod.Post, x);
+
+            return RedirectToAction("ResultadoRecorrido", "Home", resultPedidos);
+        }
+
+        public async Task<ActionResult<ResultadoRecorridoModel>> ResultadoRecorrido(ResultadoRecorridoModel resultPedidos)
+        {
+            return View(resultPedidos);
+        }
 
         private static async Task<T> LlamadaHttp<T>(IHttpClientFactory httpClientFactory, string url, HttpMethod method, HttpContent? contentSend = null) where T : class
         {

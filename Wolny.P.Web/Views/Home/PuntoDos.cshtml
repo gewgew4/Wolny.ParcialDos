@@ -7,7 +7,8 @@
 <h1>PuntoDos</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    Se retornan los últimos 10 recorridos realizados por un camión con patente "@ViewBag.Patente"
+    especificada, ordenados por fecha de inicio desde el más actual hacia los primeros.
 </p>
 <table class="table">
     <thead>
@@ -22,32 +23,27 @@
                 @Html.DisplayNameFor(model => model.Finalizado)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Id)
+                @Html.DisplayNameFor(model => model.Id) e info del recorrido
             </th>
-            <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaFin)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaInicio)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Finalizado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FechaFin)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FechaInicio)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Finalizado)
+                </td>
+                <td>
+                    <a href="Details/@item.Id">Id @Html.DisplayFor(modelItem => item.Id) | Ver detalle | Punto 6</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

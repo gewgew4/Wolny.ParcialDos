@@ -25,7 +25,7 @@ public class PedidoController(IPedidoService service) : ControllerBase
     [HttpGet("SinRecorrido")]
     public async Task<ActionResult<List<Pedido>>> GetSinRecorrido()
     {
-        var result = await service.GetWhereAsync(x=> x.RecorridoId == null || x.RecorridoId == default);
+        var result = await service.GetWhereAsync(x => x.RecorridoId == null || x.RecorridoId == default);
 
         if (result.Success)
         {
@@ -33,5 +33,33 @@ public class PedidoController(IPedidoService service) : ControllerBase
         }
 
         return WebApiResponse.GetErrorResponse(result);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Pedido>> Post(Pedido entity)
+    {
+        var result = await service.Add(entity);
+
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return WebApiResponse.GetErrorResponse(result);
+    }
+
+    [HttpPost("lista")]
+    public async Task<ActionResult<Pedido>> PostLista(List<Pedido> listEntity)
+    {
+        foreach (var item in listEntity)
+        {
+            var result = await service.Add(item);
+            if (!result.Success)
+            {
+                return WebApiResponse.GetErrorResponse(result);
+            }
+        }
+
+        return Ok(listEntity);
     }
 }

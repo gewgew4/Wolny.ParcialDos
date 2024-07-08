@@ -1,0 +1,57 @@
+﻿@model IEnumerable<Wolny.P.Web.Models.PedidoModel>
+
+@{
+    ViewData["Title"] = "ListPedidos";
+}
+
+<h1>ListPedidos</h1>
+
+<p>
+    <a asp-action="AltaPedidos">Alta pedido</a>
+</p>
+<p>
+    <a asp-action="PedidosSinRecorrido">Pedidos sin recorrido</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Id
+            </th>
+            <th>
+                Ciudad
+            </th>
+            <th>
+                Entregado
+            </th>
+            <th>
+                Recorrido
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Ciudad.Nombre)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Entregado)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Recorrido.Id)
+                </td>
+@*                 <td>
+                    @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                </td> *@
+            </tr>
+        }
+    </tbody>
+</table>

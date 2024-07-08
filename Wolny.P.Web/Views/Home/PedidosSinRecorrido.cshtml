@@ -5,10 +5,19 @@
 }
 
 <h1>PedidosSinRecorrido</h1>
-
 <p>
-    <a asp-action="Create">Create New</a>
+    Seleccionar con el checkbox los pedidos, la ciudad de origen del recorrido y
+    el algoritmo (fuerza bruta u otros más que son heurísticos)
 </p>
+<p>
+    Presionar "Crear recorrido" y se obtiene la información del recorrido resultante y cuanto tiempo
+    demoró el algoritmo
+</p>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.Error))
+{
+    <p class="alert-danger" >@ViewBag.Error</p>
+}
 
 <form asp-action="SubmitSelectedPedidos" method="post">
     <table class="table">
@@ -24,9 +33,8 @@
                     Ciudad
                 </th>
                 <th>
-                    Select
+                    Seleccionar
                 </th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -43,12 +51,7 @@
                         @Html.DisplayFor(modelItem => item.Ciudad.Nombre)
                     </td>
                     <td>
-                        <input type="checkbox" name="selectedPedidos" value="@item.Id" />
-                    </td>
-                    <td>
-                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                        <input type="checkbox" name="selectedPedidos" value="@item.Id;@item.Ciudad.Id" />
                     </td>
                 </tr>
             }
@@ -56,7 +59,7 @@
     </table>
 
     <div>
-        <label for="selectedCiudad">Select a Ciudad:</label>
+        <label for="selectedCiudad">Seleccioná ciudad de origen:</label>
         <select id="selectedCiudad" name="selectedCiudad">
             @foreach (var ciudad in Model.Ciudades)
             {
@@ -64,6 +67,25 @@
             }
         </select>
     </div>
+    @*     public enum AlgoritmoEnum
+    {
+    FuerzaBruta,
+    VecinosMasCercanos,
+    Voraz,
+    RecocidoSimulado,
+    ColoniaHormigas
+    } *@
 
-    <button type="submit">Submit Selected</button>
+    <div>
+        <label for="selectedAlgo">Seleccioná algoritmo:</label>
+        <select id="selectedAlgo" name="selectedAlgo">
+            <option value="0">Fuerza bruta</option>
+            <option value="1">Vecinos más cercanos</option>
+            <option value="2">Voraz</option>
+            <option value="3">Recocido simulado</option>
+            <option value="4">Colonia de hormigas</option>
+        </select>
+    </div>
+
+    <button type="submit">Crear recorrido</button>
 </form>

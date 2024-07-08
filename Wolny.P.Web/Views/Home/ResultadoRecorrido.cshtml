@@ -1,0 +1,53 @@
+﻿@model Wolny.P.Web.Models.ResultadoRecorridoModel
+
+@{
+    ViewData["Title"] = "ResultadoRecorrido";
+}
+
+<h1>Resultado recorrido</h1>
+
+<div>
+    <h4>Cómo quedó el recorrido calculado</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.RecorridoId)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.RecorridoId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.MejorRuta)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.MejorRuta)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DistanciaMinima)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DistanciaMinima)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Tiempo)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Tiempo)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Milisegundos)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Milisegundos)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Ticks)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Ticks)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a href="Details/@Model.RecorridoId">Ver mapa</a>
+</div>

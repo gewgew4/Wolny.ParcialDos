@@ -7,6 +7,26 @@ using Wolny.P.Infrastructure.Repo.Interfaces;
 namespace Wolny.P.Application.Services;
 public class PedidoService(IUnitOfWork unitOfWork) : IPedidoService
 {
+    public async Task<Result<Pedido>> Add(Pedido entity)
+    {
+        var existing = await unitOfWork.PedidoRepo.GetById(entity.Id);
+        if (existing != null)
+        {
+            return Result<Pedido>.Fail(ResultType.Unexpected, ["Pedido ya existe"]);
+        }
+
+        var newEntity = new Pedido
+        {
+            CiudadId = entity.CiudadId,
+            RecorridoId = entity.RecorridoId
+        };
+
+        var result = await unitOfWork.PedidoRepo.Add(newEntity);
+        await unitOfWork.SaveAsync();
+
+        return Result<Pedido>.Ok(result);
+    }
+
     public async Task<Result<Pedido>> GetByIdAsync(int id)
     {
         var entity = await unitOfWork.PedidoRepo.GetById(id);
@@ -47,11 +67,11 @@ public class PedidoService(IUnitOfWork unitOfWork) : IPedidoService
         }
 
         existing.Ciudad = entity.Ciudad;
-        //existing.Recorrido = entity.Recorrido;
-        //existing.RecorridoId = entity.Recorrido.Id;
-        
+        existing.RecorridoId = entity.RecorridoId;
+
+        var result = await unitOfWork.PedidoRepo.Update(existing);
         await unitOfWork.SaveAsync();
 
-        return Result<Pedido>.Ok(await unitOfWork.PedidoRepo.Update(existing));
+        return Result<Pedido>.Ok(result);
     }
 }
