@@ -65,7 +65,7 @@ public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoServic
         }
 
         var allPlanesRecorrido = (await unitOfWork.PlanRecorridoRepo.GetWhere(x => x.RecorridoId == entity.RecorridoId, includeProperties: ["Ciudad"])).ToList();
-        if (!allPlanesRecorrido.Any ())
+        if (!allPlanesRecorrido.Any())
         {
             return Result<List<PlanRecorrido>>.Fail(ResultType.NotFound);
         }
@@ -82,7 +82,7 @@ public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoServic
             await unitOfWork.PlanRecorridoRepo.Update(existingPlan);
         }
 
-        for (int i = 0; i < allPlanesRecorrido.Where(y=> y.Finalizado).Count(); i++)
+        for (int i = 0; i < allPlanesRecorrido.Where(y => y.Finalizado).Count(); i++)
         {
             var finalizado = allPlanesRecorrido[i].Finalizado;
             if (finalizado == false)
@@ -94,14 +94,17 @@ public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoServic
         var existingCamion = await unitOfWork.CamionRepo.GetById(entity.CamionId);
         if (existingCamion != null)
         {
-            existingCamion.Ubicacion = allPlanesRecorrido.Where(x => x.Finalizado == true).FirstOrDefault().Ciudad.Ubicacion;
+            existingCamion.Ubicacion = allPlanesRecorrido.Where(x => x.Finalizado == true).LastOrDefault().Ciudad.Ubicacion;
             await unitOfWork.CamionRepo.Update(existingCamion);
         }
 
         if (!allPlanesRecorrido.Any(x => x.Finalizado == false))
         {
+            existingCamion.Disponible = true;
+            existingRecorrido.FechaFin = DateTime.UtcNow;
             existingRecorrido.Finalizado = true;
             await unitOfWork.RecorridoRepo.Update(existingRecorrido);
+            await unitOfWork.CamionRepo.Update(existingCamion);
         }
 
         await unitOfWork.SaveAsync();
