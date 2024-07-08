@@ -22,6 +22,19 @@ public class CamionController(ICamionService service) : ControllerBase
         return WebApiResponse.GetErrorResponse(result);
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<List<Camion>>> GetById(int id)
+    {
+        var result = await service.GetByIdAsync(id);
+
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return WebApiResponse.GetErrorResponse(result);
+    }
+
     [HttpGet("PuntoTres")]
     public async Task<ActionResult<List<Camion>>> GetPuntoTres([FromQuery] bool disponible)
     {

@@ -55,6 +55,10 @@
                 </td>
                 <td>
                     @Html.ActionLink("Punto 5", "Details", new { id = item.Id })
+                    @if (item.Camion.Patente == "Sin camión")
+                    {
+                        @Html.ActionLink("Asignarle camión", "AsignarleCamion", new { id = item.Id })
+                    }
                 </td>
             </tr>
         }

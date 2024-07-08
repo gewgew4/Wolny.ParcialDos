@@ -31,6 +31,39 @@ namespace Wolny.P.Web.Controllers
             return View(result);
         }
 
+        public async Task<ActionResult<AsignarModel>> AsignarleCamion(int id)
+        {
+            var urlCamiones = "https://localhost:7168/api/Camion/PuntoTres?disponible=true";
+            var urlRecorrido = $"https://localhost:7168/api/Recorrido/{id}";
+
+            var resultCamiones = await LlamadaHttp<List<CamionModel>>(httpClientFactory, urlCamiones, HttpMethod.Get);
+            var resultRecorrido = await LlamadaHttp<RecorridoModel>(httpClientFactory, urlRecorrido, HttpMethod.Get);
+
+            var result = new AsignarModel
+            {
+                Camion = resultCamiones,
+                Recorrido = resultRecorrido
+            };
+            if (resultRecorrido.Camion != null)
+            {
+                throw new Exception("El recorrido ya tiene camión asignado");
+            }
+            return View(result);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<AsignarModel>> AsignarleCamion(AsignarModel entity)
+        {
+            var url = $"https://localhost:7168/api/Recorrido/AsignarleCamion";
+
+            entity.FechaInicio = DateTime.UtcNow;
+            var x = JsonContent.Create(new { RecorridoId = entity.Recorrido.Id, entity.CamionId, entity.FechaInicio });
+
+            var result = await LlamadaHttp<RecorridoModel>(httpClientFactory, url, HttpMethod.Put, x);
+
+            return RedirectToAction("Recorridos");
+        }
+
         public async Task<ActionResult<List<CamionModel>>> Camiones()
         {
             var url = "https://localhost:7168/api/Camion";
@@ -38,6 +71,29 @@ namespace Wolny.P.Web.Controllers
             var result = await LlamadaHttp<List<CamionModel>>(httpClientFactory, url, HttpMethod.Get);
 
             return View(result);
+        }
+
+        public async Task<ActionResult<CamionModel>> CambioCamion(int id)
+        {
+            var url = $"https://localhost:7168/api/Camion/{id}";
+
+            var result = await LlamadaHttp<CamionModel>(httpClientFactory, url, HttpMethod.Get);
+
+            return View(result);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<CamionModel>> CambioCamion(CamionModel entity)
+        {
+            var url = "https://localhost:7168/api/Camion";
+
+            entity.Patente = "NoCambiará";
+
+            var x = JsonContent.Create(entity);
+
+            var result = await LlamadaHttp<CamionModel>(httpClientFactory, url, HttpMethod.Put, x);
+
+            return RedirectToAction("Camiones");
         }
 
         public async Task<ActionResult<List<RecorridoModel>>> PuntoDos(string patente)
@@ -88,7 +144,7 @@ namespace Wolny.P.Web.Controllers
 
             var result = new PuntoUnoModel
             {
-                Pedidos = resultPedidos.OrderBy(x=> x.Id).ToList(),
+                Pedidos = resultPedidos.OrderBy(x => x.Id).ToList(),
                 Ciudades = resultCiudades
             };
             return View(result);
@@ -188,11 +244,11 @@ namespace Wolny.P.Web.Controllers
                 using var contentStream =
                     await httpResponseMessage.Content.ReadAsStreamAsync();
 
-                var content = await httpResponseMessage.Content.ReadAsStringAsync();
 
                 var deserialized = await JsonSerializer.DeserializeAsync<Result<T>>(contentStream, options);
                 return deserialized.Data;
             }
+            var content = await httpResponseMessage.Content.ReadAsStringAsync();
 
             return default(T);
         }

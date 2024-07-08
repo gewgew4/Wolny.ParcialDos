@@ -54,7 +54,6 @@ public class CamionService(IUnitOfWork unitOfWork) : ICamionService
         }
 
         existing.Disponible = entity.Disponible;
-        existing.Patente = entity.Patente;
         existing.Ubicacion = entity.Ubicacion;
 
         await unitOfWork.SaveAsync();

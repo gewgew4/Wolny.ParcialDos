@@ -9,4 +9,5 @@ public interface IRecorridoService : IGenericService<Recorrido>
 {
     Task<Result<dynamic>> GenerarRecorrido(GenerarRecorrido entity);
     Task<Result<List<Recorrido>>> GetPuntoDos(PuntoDos request);
+    Task<Result<Recorrido>> AsignarleCamion(AsignarleCamionModel request);
 }

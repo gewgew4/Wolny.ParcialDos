@@ -12,6 +12,7 @@
 @Html.ActionLink("Punto 3", "PuntoTres") |
 @Html.ActionLink("Punto 4/7", "PuntoCuatro") |
 
+
 <table class="table">
     <thead>
         <tr>
@@ -41,7 +42,8 @@
                     @Html.DisplayFor(modelItem => item.Id)
                 </td>
                 <td>
-                    @Html.ActionLink("Punto 2", "PuntoDos", new { patente = item.Patente })
+                    @Html.ActionLink("Punto 2", "PuntoDos", new { patente = item.Patente }) |
+                    @Html.ActionLink("Cambiar info de camión", "CambioCamion", new { item.Id })
                 </td>
             </tr>
         }

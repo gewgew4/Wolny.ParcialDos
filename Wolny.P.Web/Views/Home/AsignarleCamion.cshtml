@@ -1,0 +1,48 @@
+﻿@model Wolny.P.Web.Models.AsignarModel
+
+@{
+    ViewData["Title"] = "AsignarleCamion";
+}
+
+<h1>Asignar camión a un recorrido</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="AsignarleCamion">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+@*             <div class="form-group">
+                <label asp-for="CamionId" class="control-label"></label>
+                <input asp-for="CamionId" class="form-control" />
+                <span asp-validation-for="CamionId" class="text-danger"></span>
+            </div> *@
+            Id del recorrido: @Html.DisplayFor(Model=>Model.Recorrido.Id)
+            <div>
+                <label for="selectedCiudad">Seleccioná camión:</label>
+                <select id="CamionId" name="CamionId">
+                    @foreach (var camion in Model.Camion)
+                    {
+                        <option value="@camion.Id">@camion.Patente</option>
+                    }
+                </select>
+            </div>
+            @Html.HiddenFor(modelItem => Model.Recorrido.Id)
+@*             <div class="form-group">
+                <label asp-for="FechaInicio" class="control-label"></label>
+                <input asp-for="FechaInicio" class="form-control" />
+                <span asp-validation-for="FechaInicio" class="text-danger"></span>
+            </div> *@
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Recorridos">Volver</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

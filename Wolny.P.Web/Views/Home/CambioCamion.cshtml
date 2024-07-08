@@ -1,0 +1,48 @@
+﻿@model Wolny.P.Web.Models.CamionModel
+
+@{
+    ViewData["Title"] = "Cambio info de camión";
+    var disp = Model.Disponible ? "Camión disponible" : "Camión en recorrido";
+}
+
+<h1>Cambio info de camión</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CambioCamion">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @disp
+            @Html.HiddenFor(modelItem => Model.Disponible)
+            <div class="form-group">
+                <label asp-for="Patente" class="control-label"></label>
+                @Html.DisplayFor(modelItem => Model.Patente)
+            </div>
+            <div class="form-group">
+                <label asp-for="Id" class="control-label"></label>
+                @Html.DisplayFor(modelItem => Model.Id)
+            </div>
+            <div class="form-group form-check">
+                <div class="form-group">
+                    <label asp-for="Ubicacion.Latitud" class="control-label"></label>
+                    <input asp-for="Ubicacion.Latitud" class="form-control" />
+                    <span asp-validation-for="Ubicacion.Latitud" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group form-check">
+                <div class="form-group">
+                    <label asp-for="Ubicacion.Longitud" class="control-label"></label>
+                    <input asp-for="Ubicacion.Longitud" class="form-control" />
+                    <span asp-validation-for="Ubicacion.Longitud" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Guardar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Camiones">Volver</a>
+</div>

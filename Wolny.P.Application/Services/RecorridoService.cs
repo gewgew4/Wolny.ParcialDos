@@ -65,9 +65,44 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
         existing.Pedidos = entity.Pedidos;
         existing.PlanRecorridos = entity.PlanRecorridos;
 
+        var result = await unitOfWork.RecorridoRepo.Update(existing);
         await unitOfWork.SaveAsync();
 
-        return Result<Recorrido>.Ok(await unitOfWork.RecorridoRepo.Update(existing));
+        return Result<Recorrido>.Ok(result);
+    }
+
+    public async Task<Result<Recorrido>> AsignarleCamion(AsignarleCamionModel request)
+    {
+        var existingCamion = await unitOfWork.CamionRepo.GetById(request.CamionId);
+        if (existingCamion == null)
+        {
+            return Result<Recorrido>.Fail(ResultType.NotFound, ["Camión inexistente"]);
+        }
+
+        var existingRecorrido = await unitOfWork.RecorridoRepo.GetById(request.RecorridoId);
+        if (existingRecorrido == null)
+        {
+            return Result<Recorrido>.Fail(ResultType.NotFound, ["Recorrido inexistente"]);
+        }
+
+        if (existingRecorrido.Camion != null)
+        {
+            return Result<Recorrido>.Fail(ResultType.Invalid, ["Recorrido ya asignado"]);
+        }
+
+        var existingPlanRecorrido = await unitOfWork.PlanRecorridoRepo.GetWhere(x => x.RecorridoId == request.RecorridoId, includeProperties: ["Ciudad"]);
+
+        existingRecorrido.Camion = existingCamion;
+        existingRecorrido.FechaInicio = request.FechaInicio;
+        existingCamion.Disponible = false;
+        existingCamion.Ubicacion = existingPlanRecorrido.First().Ciudad.Ubicacion;
+
+        var resultR = await unitOfWork.RecorridoRepo.Update(existingRecorrido);
+        var resultC = await unitOfWork.CamionRepo.Update(existingCamion);
+
+        await unitOfWork.SaveAsync();
+
+        return Result<Recorrido>.Ok(resultR);
     }
 
     public async Task<Result<dynamic>> GenerarRecorrido(GenerarRecorrido entity)
