@@ -59,6 +59,10 @@
                     {
                         @Html.ActionLink("Asignarle camión", "AsignarleCamion", new { id = item.Id })
                     }
+                    @if (item.Camion.Patente != "Sin camión" && !item.Finalizado)
+                    {
+                        @Html.ActionLink("Actualizar planes", "ActualizarPlanes", new { id = item.Id })
+                    }
                 </td>
             </tr>
         }

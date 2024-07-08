@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Wolny.P.Application.Models;
 using Wolny.P.Application.Result;
 using Wolny.P.Application.Services.Interfaces;
 using Wolny.P.Domain;
@@ -46,14 +47,64 @@ public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoServic
             return Result<PlanRecorrido>.Fail(ResultType.NotFound);
         }
 
-        //existing.Ciudad = entity.Ciudad;
         existing.FechaFin = entity.FechaFin;
-        existing.Prioridad = entity.Prioridad;
-        existing.Recorrido = entity.Recorrido;
-        existing.RecorridoId = entity.Recorrido.Id;
+        existing.Finalizado = entity.Finalizado;
 
+        var result = await unitOfWork.PlanRecorridoRepo.Update(existing);
         await unitOfWork.SaveAsync();
 
-        return Result<PlanRecorrido>.Ok(await unitOfWork.PlanRecorridoRepo.Update(existing));
+        return Result<PlanRecorrido>.Ok(result);
+    }
+
+    public async Task<Result<List<PlanRecorrido>>> ActualizarPlanes(ActualizarPlanesModel entity)
+    {
+        var existingRecorrido = await unitOfWork.RecorridoRepo.GetById(entity.RecorridoId);
+        if (existingRecorrido == null)
+        {
+            return Result<List<PlanRecorrido>>.Fail(ResultType.NotFound);
+        }
+
+        var allPlanesRecorrido = (await unitOfWork.PlanRecorridoRepo.GetWhere(x => x.RecorridoId == entity.RecorridoId, includeProperties: ["Ciudad"])).ToList();
+        if (!allPlanesRecorrido.Any ())
+        {
+            return Result<List<PlanRecorrido>>.Fail(ResultType.NotFound);
+        }
+
+        foreach (var item in entity.PlanesRecorrido)
+        {
+            var existingPlan = allPlanesRecorrido.FirstOrDefault(x => x.Id == item.PlanRecorridoId);
+            if (existingPlan == null)
+            {
+                return Result<List<PlanRecorrido>>.Fail(ResultType.NotFound);
+            }
+            existingPlan.FechaFin = item.FechaFin;
+            existingPlan.Finalizado = true;
+            await unitOfWork.PlanRecorridoRepo.Update(existingPlan);
+        }
+
+        for (int i = 0; i < allPlanesRecorrido.Where(y=> y.Finalizado).Count(); i++)
+        {
+            var finalizado = allPlanesRecorrido[i].Finalizado;
+            if (finalizado == false)
+            {
+                return Result<List<PlanRecorrido>>.Fail(ResultType.Invalid, ["Seleccionados tramos incorrectamente"]);
+            }
+        }
+
+        var existingCamion = await unitOfWork.CamionRepo.GetById(entity.CamionId);
+        if (existingCamion != null)
+        {
+            existingCamion.Ubicacion = allPlanesRecorrido.Where(x => x.Finalizado == true).FirstOrDefault().Ciudad.Ubicacion;
+            await unitOfWork.CamionRepo.Update(existingCamion);
+        }
+
+        if (!allPlanesRecorrido.Any(x => x.Finalizado == false))
+        {
+            existingRecorrido.Finalizado = true;
+            await unitOfWork.RecorridoRepo.Update(existingRecorrido);
+        }
+
+        await unitOfWork.SaveAsync();
+        return Result<List<PlanRecorrido>>.Ok(allPlanesRecorrido.ToList());
     }
 }

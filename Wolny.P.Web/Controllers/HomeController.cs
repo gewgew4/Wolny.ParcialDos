@@ -13,6 +13,85 @@ namespace Wolny.P.Web.Controllers
             return View();
         }
 
+        public async Task<ActionResult<ActualizarPlanesModel>> ActualizarPlanes(int id, string error = "")
+        {
+            ViewBag.Error = error;
+            var urlRecorrido = $"https://localhost:7168/api/Recorrido/{id}";
+
+            var resultRecorrido = await LlamadaHttp<RecorridoModel>(httpClientFactory, urlRecorrido, HttpMethod.Get);
+
+            var urlCamiones = $"https://localhost:7168/api/Camion/{resultRecorrido.Camion.Id}";
+            var resultCamiones = await LlamadaHttp<CamionModel>(httpClientFactory, urlCamiones, HttpMethod.Get);
+
+            var listadoPlanRecorridoActulizado = new List<PlanRecorridoActulizadoModel>();
+
+            foreach (var item in resultRecorrido.PlanRecorridos)
+            {
+                if (!item.Finalizado)
+                {
+                    var agregado = new PlanRecorridoActulizadoModel
+                    {
+                        PlanRecorridoId = item.Id,
+                        FechaFin = item.FechaFin
+                    };
+                    listadoPlanRecorridoActulizado.Add(agregado);
+                }
+            }
+
+            var result = new ActualizarPlanesModel
+            {
+                CamionId = resultCamiones.Id,
+                CamionPatente = resultCamiones.Patente,
+                PlanesRecorrido = listadoPlanRecorridoActulizado,
+                RecorridoId = resultRecorrido.Id
+            };
+
+            return View(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ActualizarPlanes(ActualizarPlanesModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var selectedPlanes = model.PlanesRecorrido
+                    .Where(pr => pr.IsSelected)
+                    .Select(pr => new PlanRecorridoActulizadoModel
+                    {
+                        PlanRecorridoId = pr.PlanRecorridoId,
+                        FechaFin = pr.FechaFin.GetValueOrDefault()
+                    }).ToList();
+
+                var actualizarModel = new ActualizarPlanesModel
+                {
+                    CamionId = model.CamionId,
+                    CamionPatente = model.CamionPatente,
+                    RecorridoId = model.RecorridoId,
+                    PlanesRecorrido = selectedPlanes
+                };
+
+                if (actualizarModel.PlanesRecorrido.Any(x=> x.FechaFin == DateTime.MinValue || x.FechaFin == default))
+                {
+                    return RedirectToAction("ActualizarPlanes", new { id = model.RecorridoId, error = "Fechas incorrectas" });
+
+                }
+
+                var urlActualizar = $"https://localhost:7168/api/PlanRecorrido/ActualizarPlanes";
+                var x = JsonContent.Create(actualizarModel);
+
+                var result = await LlamadaHttp<List<PlanRecorridoModel>>(httpClientFactory, urlActualizar, HttpMethod.Put, x);
+                if (result == null)
+                {
+
+                    return RedirectToAction("ActualizarPlanes", new { id = model.RecorridoId, error = "Se eligieron incorrectamente a los tramos" });
+
+                }
+                return RedirectToAction("Recorridos");
+            }
+
+            return View(model);
+        }
+
         public async Task<ActionResult<RecorridoModel>> Details(int id)
         {
             var url = $"https://localhost:7168/api/Recorrido/{id}";

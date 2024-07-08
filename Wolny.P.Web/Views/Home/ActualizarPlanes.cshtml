@@ -1,0 +1,47 @@
+﻿@model ActualizarPlanesModel
+
+@{
+    ViewData["Title"] = "Actualizar Planes";
+}
+
+<h1>Actualizar Planes</h1>
+
+<p class="alert-danger">@ViewBag.Error</p>
+
+<p>En este apartado se pueden observar los tramos del plan/recorrido</p>
+<p>Seleccione los tramos que desea actualizar, indicando la fecha de finalización</p>
+<p>Se tomará el último tramo completado como la ubicación del camión</p>
+<p>Evite elegir fechas incorrectas o tramos discontinuos</p>
+
+<form asp-action="ActualizarPlanes" method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Plan Recorrido ID</th>
+                <th>Fecha Fin</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.PlanesRecorrido.Count; i++)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" asp-for="@Model.PlanesRecorrido[i].IsSelected" />
+                    </td>
+                    <td>
+                        @Model.PlanesRecorrido[i].PlanRecorridoId
+                        <input type="hidden" asp-for="@Model.PlanesRecorrido[i].PlanRecorridoId" />
+                    </td>
+                    <td>
+                        <input type="datetime-local" asp-for="@Model.PlanesRecorrido[i].FechaFin" class="form-control" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <input type="hidden" asp-for="RecorridoId" />
+    <input type="hidden" asp-for="CamionId" />
+    <input type="hidden" asp-for="CamionPatente" />
+    <button type="submit" class="btn btn-primary">Actualizar</button>
+</form>
