@@ -32,7 +32,7 @@ public class PContext : DbContext
     {
         var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-        // Props
+        // Props config
         modelBuilder.Entity<Camion>()
             .Property(x => x.Ubicacion)
             .HasConversion(
@@ -78,8 +78,6 @@ public class PContext : DbContext
             .HasColumnType("nvarchar(max)");
 
         // Navigation properties settings
-        //modelBuilder.Entity<Recorrido>().Navigation(e => e.Pedidos).AutoInclude();
-        //modelBuilder.Entity<Recorrido>().Navigation(e => e.PlanRecorridos).AutoInclude();
         modelBuilder.Entity<Pedido>().Navigation(e => e.Ciudad).AutoInclude();
         modelBuilder.Entity<Pedido>().Navigation(e => e.Recorrido).AutoInclude();
         modelBuilder.Entity<PlanRecorrido>().Navigation(e => e.Ciudad).AutoInclude();
@@ -153,7 +151,7 @@ public class PContext : DbContext
 
         var geoCaba = new Geolocalizacion(-34.60, -58.37);
 
-        // Seed Camiones
+        // Seed de camiones
         var camionUsado = new Camion
         {
             Id = 1,

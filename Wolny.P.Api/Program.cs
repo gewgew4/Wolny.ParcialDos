@@ -13,7 +13,7 @@ public class Program
         // Add services to the container.
 
         builder.Services.AddControllers()
-            .AddJsonOptions(o=>
+            .AddJsonOptions(o =>
             {
                 o.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
             });
@@ -26,7 +26,8 @@ public class Program
         builder.Services.InfrastructureConfigureServices(builder.Configuration);
         builder.Services.ApplicationConfigureServices(builder.Configuration);
 
-        builder.Services.AddLogging(loggingBuilder => {
+        builder.Services.AddLogging(loggingBuilder =>
+        {
             loggingBuilder.AddConsole()
                 .AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information);
             loggingBuilder.AddDebug();

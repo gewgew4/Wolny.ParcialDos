@@ -2,7 +2,7 @@
 
 public class ActualizarPlanesModel
 {
-    public List<PlanRecorridoModel> PlanesRecorrido { get; set; } 
+    public List<PlanRecorridoModel> PlanesRecorrido { get; set; }
     public int RecorridoId { get; set; }
     public int CamionId { get; set; }
 }

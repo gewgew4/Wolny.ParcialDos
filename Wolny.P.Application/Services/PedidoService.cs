@@ -5,6 +5,7 @@ using Wolny.P.Domain;
 using Wolny.P.Infrastructure.Repo.Interfaces;
 
 namespace Wolny.P.Application.Services;
+
 public class PedidoService(IUnitOfWork unitOfWork) : IPedidoService
 {
     public async Task<Result<Pedido>> Add(Pedido entity)

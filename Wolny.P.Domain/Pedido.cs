@@ -4,7 +4,7 @@ public class Pedido : BaseEntity<Pedido>
 {
     public bool Entregado { get; set; }
 
-    // Navigation property
+    // Navigation props
     public Ciudad? Ciudad { get; set; }
     public int CiudadId { get; set; }
     public int? RecorridoId { get; set; }

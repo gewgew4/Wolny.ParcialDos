@@ -8,6 +8,7 @@ using Wolny.P.Domain;
 using Wolny.P.Infrastructure.Repo.Interfaces;
 
 namespace Wolny.P.Application.Services;
+
 public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
 {
     public async Task<Result<Recorrido>> GetByIdAsync(int id)
@@ -124,11 +125,10 @@ public class RecorridoService(IUnitOfWork unitOfWork) : IRecorridoService
             {
                 var existingPedido = await unitOfWork.PedidoRepo.GetById(pedidoId) ?? throw new NotFoundException("Pedido inexistente");
 
-                // Esto chequearía que no haya pedido re/programado ilegalmente, pero por ahora comentado para poder probar los algoritmos
-                //if (existingPedido.Entregado == true || existingPedido.Recorrido != null)
-                //{
-                //    throw new InvalidException("Pedido ya asignado a un recorrido");
-                //}
+                if (existingPedido.Entregado == true || existingPedido.Recorrido != null)
+                {
+                    throw new InvalidException("Pedido ya asignado a un recorrido");
+                }
 
                 var ciudadPedido = listaCiudadesExistentes.SingleOrDefault(x => x.Id == existingPedido.Ciudad.Id);
                 if (ciudadPedido == null)

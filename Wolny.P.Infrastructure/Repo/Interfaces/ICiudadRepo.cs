@@ -2,4 +2,4 @@
 
 namespace Wolny.P.Infrastructure.Repo.Interfaces;
 
-public interface ICiudadRepo : IGenericRepo<Ciudad> { }
+public interface ICiudadRepo : IGenericRepo<Ciudad>;

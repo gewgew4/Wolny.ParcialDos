@@ -6,6 +6,7 @@ using Wolny.P.Domain;
 using Wolny.P.Infrastructure.Repo.Interfaces;
 
 namespace Wolny.P.Application.Services;
+
 public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoService
 {
     public async Task<Result<PlanRecorrido>> GetByIdAsync(int id)
@@ -65,7 +66,7 @@ public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoServic
         }
 
         var allPlanesRecorrido = (await unitOfWork.PlanRecorridoRepo.GetWhere(x => x.RecorridoId == entity.RecorridoId, includeProperties: ["Ciudad"])).ToList();
-        if (!allPlanesRecorrido.Any())
+        if (allPlanesRecorrido.Count == 0)
         {
             return Result<List<PlanRecorrido>>.Fail(ResultType.NotFound);
         }

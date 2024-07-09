@@ -5,10 +5,8 @@
 }
 
 <h1>Alta Pedidos</h1>
-
-
-<h4>PedidoModel</h4>
 <hr />
+<p>Para dar de alta pedidos en caso de ser necesario (ya se precargaron varios)</p>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="AltaPedidos">
@@ -35,9 +33,6 @@
     </div>
 </div>
 
-@* <div>
-    <a asp-action="Index">Back to List</a>
-</div> *@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

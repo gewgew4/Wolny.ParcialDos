@@ -5,6 +5,7 @@ using Wolny.P.Domain;
 using Wolny.P.Infrastructure.Repo.Interfaces;
 
 namespace Wolny.P.Application.Services;
+
 public class CiudadService(IUnitOfWork unitOfWork) : ICiudadService
 {
     public async Task<Result<Ciudad>> GetByIdAsync(int id)
@@ -50,8 +51,10 @@ public class CiudadService(IUnitOfWork unitOfWork) : ICiudadService
         existing.Nombre = entity.Nombre;
         existing.Ubicacion = entity.Ubicacion;
 
+        var result = await unitOfWork.CiudadRepo.Update(existing);
+
         await unitOfWork.SaveAsync();
 
-        return Result<Ciudad>.Ok(await unitOfWork.CiudadRepo.Update(existing));
+        return Result<Ciudad>.Ok(result);
     }
 }

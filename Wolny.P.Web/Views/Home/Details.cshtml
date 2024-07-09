@@ -77,13 +77,13 @@
                 coordinates.push({
                     lat: @Html.Raw(plan.Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false))),
                     lng: @Html.Raw(plan.Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)))
-                                                });
+                                                                });
             markers.push({
                 lat: @Html.Raw(plan.Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false))),
                 lng: @Html.Raw(plan.Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false))),
                 name: '@plan.Ciudad.Nombre',
                 finalizado: @plan.Finalizado.ToString().ToLower() // Convert the boolean to a lowercase string
-                                                });
+                                                                });
         </text>
     }
 
@@ -91,7 +91,7 @@
             coordinates.push({
                 lat: @Html.Raw(Model.PlanRecorridos.First().Ciudad.Ubicacion.Latitud.ToString("0.00", new CultureInfo("en-US", false))),
                 lng: @Html.Raw(Model.PlanRecorridos.First().Ciudad.Ubicacion.Longitud.ToString("0.00", new CultureInfo("en-US", false)))
-                        });
+                                });
 
         // Create a map centered at the first coordinate
         var map = new google.maps.Map(document.getElementById('map'), {
@@ -139,7 +139,7 @@
                 position: {
                     lat: @Html.Raw((Model.Camion.Ubicacion.Latitud - 0.05).ToString("0.00", new CultureInfo("en-US", false))),
                     lng: @Html.Raw((Model.Camion.Ubicacion.Longitud + 0.05).ToString("0.00", new CultureInfo("en-US", false)))
-                                },
+                                        },
                 map: map,
                 title: '@Model.Camion.Patente',
                 icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' // Using a blue marker for the Camion

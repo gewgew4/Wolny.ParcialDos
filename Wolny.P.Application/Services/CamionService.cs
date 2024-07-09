@@ -5,6 +5,7 @@ using Wolny.P.Domain;
 using Wolny.P.Infrastructure.Repo.Interfaces;
 
 namespace Wolny.P.Application.Services;
+
 public class CamionService(IUnitOfWork unitOfWork) : ICamionService
 {
     public async Task<Result<Camion>> GetByIdAsync(int id)
@@ -28,7 +29,7 @@ public class CamionService(IUnitOfWork unitOfWork) : ICamionService
 
     public async Task<Result<List<Camion>>> GetPuntoTres(bool disponible)
     {
-        var listEntity = await unitOfWork.CamionRepo.GetWhere(x=> x.Disponible == disponible);
+        var listEntity = await unitOfWork.CamionRepo.GetWhere(x => x.Disponible == disponible);
 
         return Result<List<Camion>>.Ok(listEntity.ToList());
     }
@@ -56,8 +57,10 @@ public class CamionService(IUnitOfWork unitOfWork) : ICamionService
         existing.Disponible = entity.Disponible;
         existing.Ubicacion = entity.Ubicacion;
 
+        var result = await unitOfWork.CamionRepo.Update(existing);
+
         await unitOfWork.SaveAsync();
 
-        return Result<Camion>.Ok(await unitOfWork.CamionRepo.Update(existing));
+        return Result<Camion>.Ok(result);
     }
 }

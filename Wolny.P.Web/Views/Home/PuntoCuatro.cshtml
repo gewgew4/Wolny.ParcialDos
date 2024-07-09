@@ -24,23 +24,29 @@
             <th>
                 Id
             </th>
+            <th>
+                Ubicación
+            </th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Camiones) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Disponible)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Patente)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-
-        </tr>
-}
+        @foreach (var item in Model.Camiones)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Disponible)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Patente)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    Latitud: @Html.DisplayFor(modelItem => item.Ubicacion.Latitud) - Longitud : @Html.DisplayFor(modelItem => item.Ubicacion.Longitud)
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 
