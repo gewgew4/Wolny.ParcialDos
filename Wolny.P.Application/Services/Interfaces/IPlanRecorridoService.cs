@@ -7,4 +7,5 @@ namespace Wolny.P.Application.Services.Interfaces;
 public interface IPlanRecorridoService : IGenericService<PlanRecorrido>
 {
     Task<Result<List<PlanRecorrido>>> ActualizarPlanes(ActualizarPlanesModel entity);
+    Task<Result<List<PlanRecorrido>>> EnCamino(int recorridoId);
 }

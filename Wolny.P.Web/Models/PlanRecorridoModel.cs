@@ -6,4 +6,5 @@ public class PlanRecorridoModel : BaseModel<PlanRecorridoModel>
     public bool Finalizado { get; set; }
     public int Prioridad { get; set; }
     public CiudadModel Ciudad { get; set; }
+    public int RecorridoId { get; set; }
 }

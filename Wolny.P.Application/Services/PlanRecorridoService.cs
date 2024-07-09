@@ -111,4 +111,15 @@ public class PlanRecorridoService(IUnitOfWork unitOfWork) : IPlanRecorridoServic
         await unitOfWork.SaveAsync();
         return Result<List<PlanRecorrido>>.Ok(allPlanesRecorrido.ToList());
     }
+
+    public async Task<Result<List<PlanRecorrido>>> EnCamino(int recorridoId)
+    {
+        var result = await unitOfWork.PlanRecorridoRepo.GetWhere(x => x.RecorridoId == recorridoId);
+        result = result.OrderBy(x => x.Prioridad);
+
+        var finalizado = result.FirstOrDefault(x => x.Finalizado == false);
+        var previous = result.LastOrDefault(x => x.Finalizado == true);
+
+        return Result<List<PlanRecorrido>>.Ok([previous, finalizado]);
+    }
 }

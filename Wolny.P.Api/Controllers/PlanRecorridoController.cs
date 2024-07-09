@@ -22,4 +22,17 @@ public class PlanRecorridoController(IPlanRecorridoService service) : Controller
 
         return WebApiResponse.GetErrorResponse(result);
     }
+
+    [HttpGet("EnCamino/{id}")]
+    public async Task<ActionResult<List<PlanRecorrido>>> GetEnCamino(int id)
+    {
+        var result = await service.EnCamino(id);
+
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return WebApiResponse.GetErrorResponse(result);
+    }
 }

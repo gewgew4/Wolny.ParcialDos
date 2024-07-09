@@ -203,11 +203,35 @@ public class HomeController(IHttpClientFactory httpClientFactory, ILogger<HomeCo
         var resultCamiones = await LlamadaHttp<List<CamionModel>>(httpClientFactory, urlCamiones, HttpMethod.Get);
         var resultCiudades = await LlamadaHttp<List<CiudadModel>>(httpClientFactory, urlCiudades, HttpMethod.Get);
 
+        var resultPlanRecorridos = new List<PlanRecorridoModel>();
+
+        foreach (var camion in resultCamiones)
+        {
+            var urlRecorridos = $"https://localhost:7168/api/Recorrido/puntoDos?Top=1000&Ascending=true&Patente={camion.Patente}&Finalizado=false";
+
+            var listRecorridos = await LlamadaHttp<List<RecorridoModel>>(httpClientFactory, urlRecorridos, HttpMethod.Get);
+
+            var unRecorrido = listRecorridos.FirstOrDefault(x => x.Camion.Id == camion.Id && (x.FechaInicio != null && x.FechaInicio != DateTime.MinValue));
+            if (unRecorrido != null)
+            {
+                var urlPlan = $"https://localhost:7168/api/PlanRecorrido/EnCamino/{unRecorrido.Id}";
+                var resultPlan = await LlamadaHttp<List<PlanRecorridoModel>>(httpClientFactory, urlPlan, HttpMethod.Get);
+
+                if (resultPlan != null)
+                {
+                    resultPlanRecorridos.AddRange(resultPlan);
+                }
+            }
+        }
+
         var result = new PuntoCuatroModel
         {
             Camiones = resultCamiones,
-            Ciudades = resultCiudades
+            Ciudades = resultCiudades,
+            PlanRecorridos = resultPlanRecorridos
         };
+
+        var x = System.Text.Json.JsonSerializer.Serialize(result);
 
         return View(result);
     }
